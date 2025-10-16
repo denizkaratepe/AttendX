@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoklama Sistemi Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            margin-top: 10px;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #ed64a6 100%);
+        }
+        
+        #qrcode {
+            text-align: center;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        #qrcode canvas {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .timer {
+            background: #ffe4e1;
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: 600;
+            color: #d63031;
+        }
+        
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        
+        .student-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .success-msg {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .error-msg {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .warning-msg {
+            background: #ff9800;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .url-input-group {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .url-display {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+            margin-top: 10px;
+            border: 2px dashed #667eea;
+        }
+        
+        .wifi-status {
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .wifi-connected {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        
+        .wifi-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .security-badge {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Gelişmiş Yoklama Sistemi</h1>
+            <p>WiFi Kontrolü ile Güvenli Yoklama</p>
+        </div>
+        
+        <div class="content">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('teacher')">🧑‍🏫 Öğretim Üyesi</button>
+                <button class="tab-btn" onclick="showTab('student')">👨‍🎓 Öğrenci</button>
+            </div>
+            
+            <!-- Öğretim Üyesi Sekmesi -->
+            <div id="teacher-tab" class="tab-content active">
+                <div id="setup-form">
+                    <h2 style="margin-bottom: 20px; color: #333;">Yoklama Başlat</h2>
+                    
+                    <div class="url-input-group">
+                        <label for="baseUrl" style="color: #667eea;">📍 URL:</label>
+                        <input type="text" id="baseUrl" placeholder="https://kullanici.github.io/yoklama" value="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="courseName">Ders Adı:</label>
+                        <input type="text" id="courseName" placeholder="örn: Bilgisayar Programlama">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="courseCode">Ders Kodu:</label>
+                        <input type="text" id="courseCode" placeholder="örn: BIL101">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="week">Hafta:</label>
+                        <select id="week">
+                            <option value="">Hafta Seçin</option>
+                            <script>
+                                for(let i = 1; i <= 14; i++) {
+                                    document.write(`<option value="${i}">${i}. Hafta</option>`);
+                                }
+                            </script>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">Yoklama Süresi (dakika):</label>
+                        <input type="number" id="duration" value="5" min="1" max="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="wifiName">Üniversite WiFi Adı (Opsiyonel):</label>
+                        <input type="text" id="wifiName" placeholder="örn: eduroam, uni-wifi" value="YU-Student">
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                            ⚡ Öğrencilerin bu WiFi'ye bağlı olması gerektiği uyarısı gösterilecek
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="startAttendance()">🚀 Yoklamayı Başlat</button>
+                </div>
+                
+                <div id="qr-display" style="display: none;">
+                    <h2 style="margin-bottom: 20px; color: #333;">QR Kodu Göster</h2>
+                    <div id="qrcode"></div>
+                    
+                    <div class="url-display">
+                        <strong>URL:</strong> <span id="qr-url"></span>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3 id="course-info"></h3>
+                        <p id="session-code"></p>
+                        <div id="wifi-requirement"></div>
+                    </div>
+                    
+                    <div class="timer" id="timer"></div>
+                    
+                    <div class="student-list" id="student-list">
+                        <h3>Yoklama Giren Öğrenciler:</h3>
+                        <div id="students"></div>
+                    </div>
+                    
+                    <span class="student-count" id="student-count">Toplam: 0 Öğrenci</span>
+                    
+                    <button class="btn btn-secondary" onclick="downloadExcel()">📊 Excel İndir</button>
+                    <button class="btn btn-danger" onclick="endSession()">❌ Yoklamayı Bitir</button>
+                </div>
+            </div>
+            
+            <!-- Öğrenci Sekmesi -->
+            <div id="student-tab" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Yoklama Gir</h2>
+                
+                <div id="wifi-status-display"></div>
+                
+                <div class="form-group">
+                    <label for="sessionInput">Oturum Kodu:</label>
+                    <input type="text" id="sessionInput" placeholder="QR koddan otomatik gelecek veya manuel girin">
+                </div>
+                
+                <div class="form-group">
+                    <label for="studentNumber">Öğrenci Numarası:</label>
+                    <input type="text" id="studentNumber" placeholder="örn: 2021012345">
+                </div>
+                
+                <div class="form-group">
+                    <label for="studentName">Ad Soyad:</label>
+                    <input type="text" id="studentName" placeholder="örn: Ali Yılmaz">
+                </div>
+                
+                <button class="btn" onclick="submitAttendance()">✅ Yoklamaya Katıl</button>
+                
+                <div id="student-message"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Yoklama oturumlarını sakla
+        let sessions = {};
+        let currentSessionCode = null;
+        let timerInterval = null;
+        
+        // URL'den parametreleri oku
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get('s');
+            const wifi = urlParams.get('w');
+            
+            if(session) {
+                showTab('student');
+                document.getElementById('sessionInput').value = session;
+                
+                // WiFi gereksinimi varsa kontrol et
+                if(wifi && wifi !== 'none') {
+                    checkWifiConnection(wifi);
+                }
+            }
+        };
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if(tab === 'teacher') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('teacher-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('student-tab').classList.add('active');
+            }
+        }
+        
+        function generateSessionCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
+        function startAttendance() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const courseName = document.getElementById('courseName').value;
+            const courseCode = document.getElementById('courseCode').value;
+            const week = document.getElementById('week').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const wifiName = document.getElementById('wifiName').value;
+            
+            if(!courseName || !courseCode || !week) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+            
+            const sessionCode = generateSessionCode();
+            currentSessionCode = sessionCode;
+            const endTime = Date.now() + (duration * 60 * 1000);
+            
+            // Oturumu sakla
+            sessions[sessionCode] = {
+                courseName,
+                courseCode,
+                week,
+                sessionCode,
+                endTime,
+                wifiName: wifiName || null,
+                startTime: new Date().toLocaleString('tr-TR'),
+                students: []
+            };
+            
+            // QR kod URL'sini oluştur
+            let qrUrl;
+            if(baseUrl) {
+                // GitHub Pages URL'si girilmişse
+                qrUrl = `${baseUrl}?s=${sessionCode}`;
+            } else {
+                // Lokal test için
+                const currentUrl = window.location.href.split('?')[0];
+                qrUrl = `${currentUrl}?s=${sessionCode}`;
+            }
+            
+            // WiFi parametresini ekle
+            if(wifiName) {
+                qrUrl += `&w=${encodeURIComponent(wifiName)}`;
+            } else {
+                qrUrl += `&w=none`;
+            }
+            
+            // QR kodunu oluştur
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: qrUrl,
+                width: 250,
+                height: 250,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+            
+            // URL'yi göster
+            document.getElementById('qr-url').textContent = qrUrl;
+            
+            // Bilgileri göster
+            document.getElementById('course-info').textContent = `${courseCode} - ${courseName} (${week}. Hafta)`;
+            document.getElementById('session-code').innerHTML = `<strong>Oturum Kodu:</strong> ${sessionCode}`;
+            
+            // WiFi gereksinimini göster
+            if(wifiName) {
+                document.getElementById('wifi-requirement').innerHTML = 
+                    `<span class="security-badge">🔒 WiFi Kontrolü Aktif: "${wifiName}"</span>`;
+            } else {
+                document.getElementById('wifi-requirement').innerHTML = 
+                    `<span style="color: #ff9800;">⚠️ WiFi kontrolü aktif değil</span>`;
+            }
+            
+            // Timer başlat
+            startTimer(endTime);
+            
+            // Görünümleri değiştir
+            document.getElementById('setup-form').style.display = 'none';
+            document.getElementById('qr-display').style.display = 'block';
+        }
+        
+        function startTimer(endTime) {
+            timerInterval = setInterval(() => {
+                const remaining = endTime - Date.now();
+                if(remaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').textContent = '⏰ Süre Doldu! Yoklama kapandı.';
+                    document.getElementById('timer').style.background = '#ff4444';
+                    return;
+                }
+                
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                document.getElementById('timer').textContent = `⏱️ Kalan Süre: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        async function checkWifiConnection(requiredWifi) {
+            const statusDiv = document.getElementById('wifi-status-display');
+            
+            // Network Information API kontrolü (sadece HTTPS'de çalışır)
+            if ('connection' in navigator && navigator.connection) {
+                const connection = navigator.connection;
+                
+                statusDiv.innerHTML = `
+                    <div class="wifi-status wifi-connected">
+                        📶 Bağlantı Tipi: ${connection.effectiveType || 'Bilinmiyor'}
+                        <br>
+                        <small>Not: WiFi "${requiredWifi}" ağında olmanız gerekiyor!</small>
+                    </div>
+                `;
+                
+                // Basit bağlantı kontrolü
+                if(!navigator.onLine) {
+                    statusDiv.innerHTML = `
+                        <div class="wifi-status wifi-error">
+                            ❌ İnternet bağlantısı yok! Üniversite WiFi'sine bağlanın.
+                        </div>
+                    `;
+                    return false;
+                }
+            } else {
+                // API desteklenmiyorsa uyarı göster
+                statusDiv.innerHTML = `
+                    <div class="warning-msg">
+                        ⚠️ WiFi kontrolü için HTTPS bağlantısı gerekli.
+                        <br>Üniversite WiFi'si: "${requiredWifi}" ağına bağlı olduğunuzdan emin olun!
+                    </div>
+                `;
+            }
+            
+            return true;
+        }
+        
+        function submitAttendance() {
+            const sessionCode = document.getElementById('sessionInput').value;
+            const studentNumber = document.getElementById('studentNumber').value;
+            const studentName = document.getElementById('studentName').value;
+            
+            if(!sessionCode || !studentNumber || !studentName) {
+                showStudentMessage('Lütfen tüm alanları doldurun!', 'error');
+                return;
+            }
+            
+            // Session kontrolü
+            const session = sessions[sessionCode];
+            if(!session) {
+                showStudentMessage('Geçersiz oturum kodu! Hocadan QR kodu tekrar göstermesini isteyin.', 'error');
+                return;
+            }
+            
+            // Süre kontrolü
+            if(Date.now() > session.endTime) {
+                showStudentMessage('Yoklama süresi dolmuş!', 'error');
+                return;
+            }
+            
+            // WiFi kontrolü (basitleştirilmiş)
+            if(session.wifiName && !navigator.onLine) {
+                showStudentMessage(`Üniversite WiFi ağına (${session.wifiName}) bağlı değilsiniz!`, 'error');
+                return;
+            }
+            
+            // Tekrar giriş kontrolü
+            if(session.students.find(s => s.number === studentNumber)) {
+                showStudentMessage('Bu numarayla zaten yoklama girilmiş!', 'error');
+                return;
+            }
+            
+            // Öğrenciyi ekle
+            const student = {
+                number: studentNumber,
+                name: studentName,
+                time: new Date().toLocaleTimeString('tr-TR')
+            };
+            
+            session.students.push(student);
+            
+            // Eğer bu hoca sekmesindeyse güncelle
+            if(currentSessionCode === sessionCode) {
+                updateStudentList();
+            }
+            
+            showStudentMessage('✅ Yoklama başarıyla kaydedildi!', 'success');
+            
+            // Formu temizle
+            document.getElementById('studentNumber').value = '';
+            document.getElementById('studentName').value = '';
+        }
+        
+        function showStudentMessage(message, type) {
+            const msgDiv = document.getElementById('student-message');
+            msgDiv.className = type === 'error' ? 'error-msg' : 'success-msg';
+            msgDiv.textContent = message;
+            msgDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 4000);
+        }
+        
+        function updateStudentList() {
+            const session = sessions[currentSessionCode];
+            if(!session) return;
+            
+            const listDiv = document.getElementById('students');
+            if(!listDiv) return;
+            
+            listDiv.innerHTML = session.students.map(s => 
+                `<div class="student-item">
+                    <span><strong>${s.number}</strong> - ${s.name}</span>
+                    <span style="color: #666; font-size: 14px;">${s.time}</span>
+                </div>`
+            ).join('');
+            
+            document.getElementById('student-count').textContent = `Toplam: ${session.students.length} Öğrenci`;
+        }
+        
+        function downloadExcel() {
+            const session = sessions[currentSessionCode];
+            if(!session || session.students.length === 0) {
+                alert('Henüz yoklama giren öğrenci yok!');
+                return;
+            }
+            
+            // CSV formatında oluştur
+            let csv = '\uFEFF'; // BOM for UTF-8
+            csv += 'Ders Kodu,Ders Adı,Hafta,Tarih\n';
+            csv += `${session.courseCode},${session.courseName},${session.week},${session.startTime}\n\n`;
+            csv += 'Öğrenci No,Ad Soyad,Giriş Saati,Durum\n';
+            csv += session.students.map(s => 
+                `${s.number},${s.name},${s.time},Mevcut`
+            ).join('\n');
+            
+            // İndir
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Yoklama_${session.courseCode}_Hafta${session.week}_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.csv`;
+            link.click();
+        }
+        
+        function endSession() {
+            if(confirm('Yoklamayı bitirmek istediğinize emin misiniz?')) {
+                // Timer'ı durdur
+                if(timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                // Görünümleri değiştir
+                document.getElementById('setup-form').style.display = 'block';
+                document.getElementById('qr-display').style.display = 'none';
+                
+                // Oturumu sil
+                if(currentSessionCode) {
+                    delete sessions[currentSessionCode];
+                    currentSessionCode = null;
+                }
+                
+                // Formu temizle (WiFi hariç - varsayılan değer kalsın)
+                document.getElementById('courseName').value = '';
+                document.getElementById('courseCode').value = '';
+                document.getElementById('week').value = '';
+                document.getElementById('duration').value = '5';
+                document.getElementById('baseUrl').value = '';
+                
+                // Öğrenci listesini temizle
+                document.getElementById('students').innerHTML = '';
+                document.getElementById('student-count').textContent = 'Toplam: 0 Öğrenci';
+            }
+        }
+    </script>
+</body>
+</html>
