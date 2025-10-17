@@ -91,6 +91,16 @@
             <script>for(let i=1;i<=14;i++)document.write(`<option value="${i}">${i}. Hafta</option>`)</script>
           </select>
         </div>
+
+        <!-- Konum zorunlu anahtarı -->
+        <div class="col">
+          <label style="display:block;">Konum zorunlu</label>
+          <label style="display:inline-flex;align-items:center;gap:8px;">
+            <input id="geo-required" type="checkbox" checked />
+            <span>Etkin</span>
+          </label>
+        </div>
+
         <div class="col">
           <button onclick="startAttendance()">QR ile Yoklama Başlat</button>
         </div>
@@ -104,9 +114,7 @@
       <h4 style="margin-top:16px">Öğrenci Listesi (Canlı)</h4>
       <div id="listMsg" class="msg" style="display:none"></div>
       <div style="overflow:auto;max-height:60vh">
-        <table id="grid">
-          <!-- başlık ve satırlar JS ile gelecek -->
-        </table>
+        <table id="grid"></table>
       </div>
     </div>
 
@@ -127,33 +135,33 @@
 </div>
 
 <script>
-  // KENDİ URL'İN: /exec ile biten Web App adresi
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyj88oWijD3gWqy_DNSRM4v9Ok797oe0Y-xwvuJAY07XokViGcS1TXOXZn3AtObuM-wZQ/exec";
+  // KENDİ /exec URL'İN
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxiH_FJKFjaZMwaH3FY0xOD0Kx2Srle8uy5ARuDZ88N3EkEEuZ2p3ATDJO87F2zxj8uLw/exec";
 
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
   let poll = null, tick = null;
 
-  // QR parametreleri ile öğrenci formunu doldur
+  // QR parametreleri → öğrenci formu
   (function(){
     const p = new URLSearchParams(location.search);
-    const c = p.get('c'), t = p.get('t'), w = p.get('w');
+    const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
     if (c) { show('student'); byId('s-course').value = c; }
     if (t === 'hourly') { byId('weekBox').style.display='none'; byId('s-week').value=''; }
     else if (w) { byId('s-week').value = w; }
+    window._geoRequired = (geo !== '0'); // default true
   })();
 
-  // ------ UI helpers ------
+  // ===== helpers =====
   function byId(x){return document.getElementById(x)}
   function show(id){['menu','panel','student'].forEach(s=>byId(s).classList.remove('active')); byId(id).classList.add('active')}
   function msg(id, text, ok){const el=byId(id); el.textContent=text; el.className='msg '+(ok?'ok':'error'); el.style.display='block';}
-
-  // ------ API helper ------
   async function call(obj){
-    const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
+    // CORS PRE-FLIGHT YOK: text/plain gönderiyoruz
+    const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)});
     return r.json();
   }
 
-  // ------ Create Course ------
+  // ===== Create Course =====
   async function createCourse(){
     const res = await call({
       action:'createCourse',
@@ -163,14 +171,16 @@
       attendanceType: byId('c-type').value,
       requiredPct: byId('c-req').value,
       password: byId('c-pass').value
-    });
-    if (res.success) msg('msg-create','Ders oluşturuldu',true); else msg('msg-create','Hata: '+res.error,false);
+    }).catch(err=>({success:false,error:String(err)}));
+    if (res.success) msg('msg-create','Ders oluşturuldu',true);
+    else msg('msg-create','Hata: '+(res.error||'bilinmeyen'),false);
   }
 
-  // ------ Teacher Login ------
+  // ===== Teacher Login =====
   async function teacherLogin(){
-    const res = await call({ action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value });
-    if (!res.success) return msg('msg-login','Hata: '+res.error,false);
+    const res = await call({ action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value })
+      .catch(err=>({success:false,error:String(err)}));
+    if (!res.success) return msg('msg-login','Hata: '+(res.error||'giriş başarısız'),false);
     current = { code: byId('t-code').value.trim(), name: res.courseName, teacher: res.teacherName, attendanceType: res.attendanceType, requiredPct: res.requiredPct };
     byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
     const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
@@ -179,73 +189,60 @@
     show('panel');
   }
 
-  function logout(){
-    current=null;
-    clearInterval(poll); clearInterval(tick);
-    show('menu');
-  }
+  function logout(){ current=null; clearInterval(poll); clearInterval(tick); show('menu'); }
 
-  // ------ Build table header ------
+  // ===== Table header =====
   function buildHeader(){
     const g = byId('grid'); g.innerHTML='';
     const tr = document.createElement('tr');
-    const baseHeads = ['Öğrenci No','Ad Soyad'];
-    baseHeads.forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
+    ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     if (current.attendanceType==='weekly'){
       for(let i=1;i<=14;i++){ const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); }
-      const thP=document.createElement('th'); thP.textContent='Devam%'; tr.appendChild(thP);
-      const thS=document.createElement('th'); thS.textContent='Durum'; tr.appendChild(thS);
+      ['Devam%','Durum'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     }
     g.appendChild(tr);
   }
 
-  // ------ Fetch and render table ------
+  // ===== Fetch + render table =====
   async function refreshTable(){
     if (!current) return;
     if (current.attendanceType!=='weekly'){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Saatlik modda tablo yok.'; return; }
 
-    const res = await call({ action:'getCourseTable', courseCode: current.code });
-    if (!res.success) { byId('listMsg').style.display='block'; byId('listMsg').textContent='Hata: '+res.error; return; }
+    const res = await call({ action:'getCourseTable', courseCode: current.code }).catch(()=>({success:false}));
+    if (!res.success) { byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
     byId('listMsg').style.display='none';
 
     const g = byId('grid');
-    // mevcut satırları temizle (başlık kalsın)
     while (g.rows.length>1) g.deleteRow(1);
 
     res.table.forEach(row=>{
       const tr = document.createElement('tr');
       add(td(row.number)); add(td(row.name));
       row.weeks.forEach(w=> add(td(w==='✓'?'✓':'')));
-      const p = row.percent;
-      const st = row.status; // OK/WARN/FAIL
-      const pctTd = td(p+'%');
-      pctTd.className = st==='OK'?'cell-ok': (st==='WARN'?'cell-warn':'cell-fail');
-      add(pctTd);
-      const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı'));
-      stTd.className = pctTd.className;
-      add(stTd);
+      const p = row.percent, st = row.status;
+      const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); add(pctTd);
+      const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; add(stTd);
       g.appendChild(tr);
-
       function add(x){ tr.appendChild(x) }
       function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
     });
   }
 
-  // ------ Start attendance + QR ------
+  // ===== Start attendance + QR =====
   function startAttendance(){
     if (!current) return;
     if (current.attendanceType==='weekly' && !byId('week').value){ alert('Hafta seç'); return; }
 
     const base = location.href.split('?')[0];
+    const geo = byId('geo-required').checked ? '1' : '0';
     const qrData = current.attendanceType==='hourly'
-      ? `${base}?c=${current.code}&t=hourly`
-      : `${base}?c=${current.code}&t=weekly&w=${byId('week').value}`;
+      ? `${base}?c=${current.code}&t=hourly&geo=${geo}`
+      : `${base}?c=${current.code}&t=weekly&w=${byId('week').value}&geo=${geo}`;
 
     byId('qrcode').innerHTML='';
     new QRCode(byId('qrcode'), { text: qrData, width:220, height:220 });
     byId('qrWrap').style.display='block';
 
-    // 5 dk sayaç
     let end = Date.now()+5*60*1000;
     clearInterval(tick);
     tick=setInterval(()=>{
@@ -254,12 +251,11 @@
       byId('timer').textContent=`Kalan: ${m}:${String(s).padStart(2,'0')}`;
     },1000);
 
-    // tabloyu 5 sn’de bir güncelle
     clearInterval(poll);
     poll=setInterval(refreshTable, 5000);
   }
 
-  // ------ Student submit ------
+  // ===== Student submit =====
   async function submitAttendance(){
     const c = byId('s-course').value.trim();
     const w = byId('s-week').value.trim();
@@ -267,18 +263,22 @@
     const nm = byId('s-name').value.trim();
     if (!c || !no || !nm) return msg('msg-stu','Boş alan var',false);
 
+    // GPS kapalıysa direkt
+    if (window._geoRequired === false) {
+      const res = await call({ action:'submitAttendance', courseCode:c, week:w, studentNumber:no, studentName:nm, geoRequired:false });
+      if (res.success){ msg('msg-stu','(GPS kapalı) Yoklama kaydedildi',true); byId('s-no').value=''; byId('s-name').value=''; }
+      else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
+      return;
+    }
+
     if (!navigator.geolocation) return msg('msg-stu','Tarayıcın konum desteği vermiyor',false);
     msg('msg-stu','Konum alınıyor...',true);
 
     navigator.geolocation.getCurrentPosition(async pos=>{
       const res = await call({
         action:'submitAttendance',
-        courseCode:c,
-        week:w,
-        studentNumber:no,
-        studentName:nm,
-        lat:pos.coords.latitude,
-        lon:pos.coords.longitude
+        courseCode:c, week:w, studentNumber:no, studentName:nm,
+        lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
       });
       if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
       else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
