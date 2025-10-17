@@ -26,6 +26,24 @@
   .chip.warn{background:#f59e0b22;color:#92400e;border:1px solid #f59e0b}
   .chip.fail{background:#ef444422;color:#991b1b;border:1px solid #ef4444}
   .flex{display:flex;gap:12px;align-items:center}
+
+  /* Mobil uyum */
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    header { padding: 14px; }
+    header h2 { font-size: clamp(18px, 4.5vw, 22px); }
+    main { padding: 14px; }
+    .row { gap: 10px; }
+    .col { min-width: 100%; }
+    input, select, button { font-size: 16px; padding: 12px; }
+    button { min-height: 44px; }
+    #qrWrap { text-align: center; }
+  }
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .col { min-width: 320px; }
+  }
+  #grid { width:100%; table-layout:fixed; word-break:break-word; }
+  #grid th, #grid td { padding:8px 6px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -91,8 +109,6 @@
             <script>for(let i=1;i<=14;i++)document.write(`<option value="${i}">${i}. Hafta</option>`)</script>
           </select>
         </div>
-
-        <!-- Konum zorunlu anahtarı -->
         <div class="col">
           <label style="display:block;">Konum zorunlu</label>
           <label style="display:inline-flex;align-items:center;gap:8px;">
@@ -100,7 +116,6 @@
             <span>Etkin</span>
           </label>
         </div>
-
         <div class="col">
           <button onclick="startAttendance()">QR ile Yoklama Başlat</button>
         </div>
@@ -109,6 +124,7 @@
       <div id="qrWrap" style="display:none;margin-top:10px">
         <div id="qrcode"></div>
         <div id="timer" class="msg"></div>
+        <button class="secondary" onclick="endAttendance()">Yoklamayı Durdur</button>
       </div>
 
       <h4 style="margin-top:16px">Öğrenci Listesi (Canlı)</h4>
@@ -136,7 +152,7 @@
 
 <script>
   // KENDİ /exec URL'İN
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxiH_FJKFjaZMwaH3FY0xOD0Kx2Srle8uy5ARuDZ88N3EkEEuZ2p3ATDJO87F2zxj8uLw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzOQJDA0mkIySTJkyH3cmU1IVG2R_doTOzY4qJVNCq_Qx7rvfp5wm8v3CPcr3rhSCV92g/exec";
 
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
   let poll = null, tick = null;
@@ -155,11 +171,15 @@
   function byId(x){return document.getElementById(x)}
   function show(id){['menu','panel','student'].forEach(s=>byId(s).classList.remove('active')); byId(id).classList.add('active')}
   function msg(id, text, ok){const el=byId(id); el.textContent=text; el.className='msg '+(ok?'ok':'error'); el.style.display='block';}
+
+  // CORS PRE-FLIGHT YOK: text/plain gönder
   async function call(obj){
-    // CORS PRE-FLIGHT YOK: text/plain gönderiyoruz
     const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)});
     return r.json();
   }
+
+  // QR boyutu cihaz genişliğine göre
+  function qrSize(){ const w = Math.min(window.innerWidth, 420); return Math.max(200, Math.min(280, Math.floor(w*0.6))); }
 
   // ===== Create Course =====
   async function createCourse(){
@@ -240,7 +260,7 @@
       : `${base}?c=${current.code}&t=weekly&w=${byId('week').value}&geo=${geo}`;
 
     byId('qrcode').innerHTML='';
-    new QRCode(byId('qrcode'), { text: qrData, width:220, height:220 });
+    new QRCode(byId('qrcode'), { text: qrData, width: qrSize(), height: qrSize() });
     byId('qrWrap').style.display='block';
 
     let end = Date.now()+5*60*1000;
@@ -253,6 +273,17 @@
 
     clearInterval(poll);
     poll=setInterval(refreshTable, 5000);
+  }
+
+  // ===== Stop attendance =====
+  function endAttendance(){
+    if (confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) {
+      if (poll) clearInterval(poll);
+      if (tick) clearInterval(tick);
+      byId('qrWrap').style.display='none';
+      byId('qrcode').innerHTML = '';
+      byId('timer').textContent = '';
+    }
   }
 
   // ===== Student submit =====
