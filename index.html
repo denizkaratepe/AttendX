@@ -167,7 +167,7 @@
 
 <script>
   // KENDİ /exec URL'İN
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxix0ttFSaQaR7UD9tVfXjKJhKusmDuAzGzKW1hpcOvKirkyr3GaJNxc0dXcuJEZ-re_g/exec";
+  const GAS_URL = "https://script.google.com/macros/s/PUT_YOUR_EXEC_ID/exec";
 
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
   let poll = null, tick = null, closedOnce=false, manual=false;
@@ -286,7 +286,7 @@
         tr.appendChild(tdw);
       });
 
-      // Yüzde / Durum
+      // Yüzde / Durum (renk sınıfı backend'in OK/WARN/FAIL çıktısına göre)
       const p = row.percent, st = row.status;
       const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); tr.appendChild(pctTd);
       const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
