@@ -14,6 +14,7 @@
   input,select,button{width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px}
   button{cursor:pointer;background:#1e3c72;color:#fff;border:none}
   button.secondary{background:#6b7280}
+  .danger{background:#dc2626}
   .section{display:none}.section.active{display:block}
   .msg{margin-top:10px;padding:10px;border-radius:8px}
   .error{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
@@ -44,6 +45,9 @@
   }
   #grid { width:100%; table-layout:fixed; word-break:break-word; }
   #grid th, #grid td { padding:8px 6px; }
+  .td-manual { cursor: pointer; }
+  .td-manual:hover { outline:2px dashed #1e3c72; outline-offset:-2px; }
+  .col-mini { width:48px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -117,6 +121,13 @@
           </label>
         </div>
         <div class="col">
+          <label style="display:block;">Manuel yoklama</label>
+          <label style="display:inline-flex;align-items:center;gap:8px;">
+            <input id="manual-mode" type="checkbox" />
+            <span>Açık/Kapalı</span>
+          </label>
+        </div>
+        <div class="col">
           <button onclick="startAttendance()">QR ile Yoklama Başlat</button>
         </div>
       </div>
@@ -125,6 +136,10 @@
         <div id="qrcode"></div>
         <div id="timer" class="msg"></div>
         <button class="secondary" onclick="endAttendance()">Yoklamayı Durdur</button>
+      </div>
+
+      <div id="manualHint" class="msg" style="display:none; margin-top:12px;">
+        Manuel mod açık: hücreye tıkla → boş → ✓ → ✗ → boş döngüsü. Sol baştaki çöp ikonu ile öğrenciyi silebilirsin.
       </div>
 
       <h4 style="margin-top:16px">Öğrenci Listesi (Canlı)</h4>
@@ -152,10 +167,10 @@
 
 <script>
   // KENDİ /exec URL'İN
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzOQJDA0mkIySTJkyH3cmU1IVG2R_doTOzY4qJVNCq_Qx7rvfp5wm8v3CPcr3rhSCV92g/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxix0ttFSaQaR7UD9tVfXjKJhKusmDuAzGzKW1hpcOvKirkyr3GaJNxc0dXcuJEZ-re_g/exec";
 
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
-  let poll = null, tick = null;
+  let poll = null, tick = null, closedOnce=false, manual=false;
 
   // QR parametreleri → öğrenci formu
   (function(){
@@ -171,15 +186,8 @@
   function byId(x){return document.getElementById(x)}
   function show(id){['menu','panel','student'].forEach(s=>byId(s).classList.remove('active')); byId(id).classList.add('active')}
   function msg(id, text, ok){const el=byId(id); el.textContent=text; el.className='msg '+(ok?'ok':'error'); el.style.display='block';}
-
-  // CORS PRE-FLIGHT YOK: text/plain gönder
-  async function call(obj){
-    const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)});
-    return r.json();
-  }
-
-  // QR boyutu cihaz genişliğine göre
-  function qrSize(){ const w = Math.min(window.innerWidth, 420); return Math.max(200, Math.min(280, Math.floor(w*0.6))); }
+  async function call(obj){ const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)}); return r.json(); }
+  function qrSize(){ const w=Math.min(window.innerWidth,420); return Math.max(200,Math.min(280,Math.floor(w*0.6))); }
 
   // ===== Create Course =====
   async function createCourse(){
@@ -211,12 +219,23 @@
 
   function logout(){ current=null; clearInterval(poll); clearInterval(tick); show('menu'); }
 
+  // ===== Manuel mod toggle =====
+  byId('manual-mode').addEventListener('change', () => {
+    manual = byId('manual-mode').checked;
+    byId('manualHint').style.display = manual ? 'block' : 'none';
+    buildHeader(); // sil kolonu vs güncelle
+    refreshTable();
+  });
+
   // ===== Table header =====
   function buildHeader(){
     const g = byId('grid'); g.innerHTML='';
     const tr = document.createElement('tr');
+    // Sil kolonu
+    const thDel=document.createElement('th'); thDel.textContent=''; thDel.className='col-mini'; tr.appendChild(thDel);
+    // Temel kolonlar
     ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
-    if (current.attendanceType==='weekly'){
+    if (current && current.attendanceType==='weekly'){
       for(let i=1;i<=14;i++){ const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); }
       ['Devam%','Durum'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     }
@@ -237,15 +256,57 @@
 
     res.table.forEach(row=>{
       const tr = document.createElement('tr');
-      add(td(row.number)); add(td(row.name));
-      row.weeks.forEach(w=> add(td(w==='✓'?'✓':'')));
+
+      // Sil butonu
+      const tdDel=document.createElement('td'); tdDel.className='col-mini';
+      const btn=document.createElement('button'); btn.textContent='🗑'; btn.className='danger';
+      btn.title='Öğrenciyi sil';
+      btn.onclick=async ()=>{
+        if (!manual) return; // manuel değilse izin yok
+        if (!confirm(`${row.number} - ${row.name} silinsin mi?`)) return;
+        await call({ action:'deleteStudent', courseCode: current.code, studentNumber: row.number }).catch(()=>{});
+        refreshTable();
+      };
+      if (!manual){ btn.disabled=true; btn.style.opacity='.5'; }
+      tdDel.appendChild(btn); tr.appendChild(tdDel);
+
+      // Numara / Ad
+      tr.appendChild(td(row.number));
+      tr.appendChild(td(row.name));
+
+      // Haftalar
+      row.weeks.forEach((w,idx)=>{
+        const tdw = td(w==='✓'?'✓':(w==='✗'?'✗':''));
+        if (manual){
+          tdw.classList.add('td-manual');
+          tdw.dataset.week = (idx+1);
+          tdw.dataset.number = row.number;
+          tdw.onclick = () => cycleCell(tdw);
+        }
+        tr.appendChild(tdw);
+      });
+
+      // Yüzde / Durum
       const p = row.percent, st = row.status;
-      const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); add(pctTd);
-      const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; add(stTd);
+      const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); tr.appendChild(pctTd);
+      const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
+
       g.appendChild(tr);
-      function add(x){ tr.appendChild(x) }
-      function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
     });
+
+    function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
+  }
+
+  // ===== Manuel: hücre döngüsü ('', '✓', '✗' → '')
+  async function cycleCell(cell){
+    const week = parseInt(cell.dataset.week,10);
+    const number = cell.dataset.number;
+    const now = cell.textContent.trim();
+    const next = (now==='' ? '✓' : (now==='✓' ? '✗' : '')); // boş → ✓ → ✗ → boş
+
+    // backend'e yaz
+    await call({ action:'setManualMark', courseCode: current.code, studentNumber: number, week, value: next }).catch(()=>{});
+    await refreshTable();
   }
 
   // ===== Start attendance + QR =====
@@ -263,10 +324,16 @@
     new QRCode(byId('qrcode'), { text: qrData, width: qrSize(), height: qrSize() });
     byId('qrWrap').style.display='block';
 
-    let end = Date.now()+5*60*1000;
+    let end = Date.now()+5*60*1000; closedOnce=false;
     clearInterval(tick);
-    tick=setInterval(()=>{
-      const left=end-Date.now(); if (left<=0){ byId('timer').textContent='Süre doldu'; clearInterval(tick); return; }
+    tick=setInterval(async ()=>{
+      const left=end-Date.now();
+      if (left<=0){
+        byId('timer').textContent='Süre doldu';
+        clearInterval(tick);
+        await closeAndStop(); // süre dolunca boşları ✗ yap
+        return;
+      }
       const m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
       byId('timer').textContent=`Kalan: ${m}:${String(s).padStart(2,'0')}`;
     },1000);
@@ -275,14 +342,25 @@
     poll=setInterval(refreshTable, 5000);
   }
 
-  // ===== Stop attendance =====
-  function endAttendance(){
-    if (confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) {
-      if (poll) clearInterval(poll);
-      if (tick) clearInterval(tick);
-      byId('qrWrap').style.display='none';
-      byId('qrcode').innerHTML = '';
-      byId('timer').textContent = '';
+  // ===== Stop attendance (erken bitir)
+  async function endAttendance(){
+    if (!confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) return;
+    await closeAndStop();
+    if (poll) clearInterval(poll);
+    if (tick) clearInterval(tick);
+    byId('qrWrap').style.display='none';
+    byId('qrcode').innerHTML = '';
+    byId('timer').textContent = '';
+  }
+
+  async function closeAndStop(){
+    if (closedOnce) return; closedOnce=true;
+    if (current && current.attendanceType==='weekly'){
+      const w = byId('week').value;
+      if (w){
+        await call({ action:'closeAttendance', courseCode: current.code, week: w }).catch(()=>{});
+        await refreshTable();
+      }
     }
   }
 
@@ -294,7 +372,6 @@
     const nm = byId('s-name').value.trim();
     if (!c || !no || !nm) return msg('msg-stu','Boş alan var',false);
 
-    // GPS kapalıysa direkt
     if (window._geoRequired === false) {
       const res = await call({ action:'submitAttendance', courseCode:c, week:w, studentNumber:no, studentName:nm, geoRequired:false });
       if (res.success){ msg('msg-stu','(GPS kapalı) Yoklama kaydedildi',true); byId('s-no').value=''; byId('s-name').value=''; }
