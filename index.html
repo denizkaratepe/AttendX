@@ -5,82 +5,417 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Yaşar Üniversitesi Yoklama</title>
 <style>
-  :root{
-    --pri:#1e3c72;
-    --pri-2:#304a80;
-    --bg:#eef2f7;
-    --ok:#166534; --ok-bg:#dcfce7;
-    --warn:#92400e; --warn-bg:#fff7cc;
-    --err:#991b1b; --err-bg:#fee2e2;
-    --br:#e5e7eb;
+  /* === YENİLENMİŞ CSS (Aco Dokunuşu) === */
+  :root {
+    --pri: #1e3c72;
+    --pri-2: #304a80;
+    --pri-light: #eef2f7; /* --bg'yi buna çevirdim */
+    --bg: #f8f9fa; /* Arka planı çok hafif kırdım */
+    --ok: #166534; --ok-bg: #dcfce7;
+    --warn: #92400e; --warn-bg: #fff7cc;
+    --err: #991b1b; --err-bg: #fee2e2;
+    --br: #e5e7eb;
+    --text-dark: #1f2937;
+    --text-light: #4b5563;
   }
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;background:var(--bg);margin:0;padding:20px}
-  .card{max-width:1100px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.1);overflow:hidden}
-  header{background:var(--pri);color:#fff;padding:20px}
-  main{padding:20px}
-  .row{display:flex;gap:16px;flex-wrap:wrap}
-  .col{flex:1;min-width:260px}
-  input,select,button{width:100%;padding:10px;border:2px solid var(--br);border-radius:10px;font-size:14px}
-  button{cursor:pointer;background:var(--pri);color:#fff;border:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-  button.secondary{background:var(--pri-2)}
-  .btn-ghost{background:transparent;border:1px solid var(--pri);color:var(--pri)}
-  .danger{background:#dc2626}
-  .section{display:none}.section.active{display:block}
-  .msg{margin-top:10px;padding:10px;border-radius:8px}
-  .error{background:var(--err-bg);color:var(--err)}.ok{background:var(--ok-bg);color:var(--ok)}
-  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px}
-  th,td{border:1px solid var(--br);padding:8px;text-align:center;font-size:14px}
-  th{background:#f3f4f6;position:sticky;top:0}
-  .cell-ok{background:#e8f5e9}.cell-warn{background:#fff7cc}.cell-fail{background:#fde2e2}
-  .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600}
-  .chip.ok{background:#16a34a22;color:#166534;border:1px solid #16a34a}
-  .chip.warn{background:#f59e0b22;color:#92400e;border:1px solid #f59e0b}
-  .chip.fail{background:#ef444422;color:#991b1b;border:1px solid #ef4444}
-  .flex{display:flex;gap:12px;align-items:center}
-  #grid{width:100%;table-layout:fixed;word-break:break-word}
-  #grid th,#grid td{padding:8px 6px}
-  .td-manual{cursor:pointer}.td-manual:hover{outline:2px dashed var(--pri);outline-offset:-2px}
-  .col-mini{width:48px}
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+    background: var(--pri-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+    padding: 24px;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 1200px; /* Tablo için biraz daha geniş */
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  header {
+    background: var(--pri);
+    color: #fff;
+    padding: 20px 28px;
+    border-bottom: 4px solid var(--pri-2);
+  }
+  header h2 {
+    margin: 0;
+  }
+
+  main {
+    padding: 28px;
+  }
+
+  .row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .col {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  /* Form Elemanları (BR'ler olmadan) */
+  input:not([type="checkbox"]),
+  select,
+  button {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--br);
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 16px; /* <br><br> yerine bu */
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  
+  input:not([type="checkbox"]):focus,
+  select:focus {
+    outline: none;
+    border-color: var(--pri-2);
+    box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.2);
+  }
+
+  /* Form Grupları */
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group > label,
+  .form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+  }
+  
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  input[type="checkbox"] {
+    width: 16px; /* Güzelleştirme */
+    height: 16px;
+    accent-color: var(--pri);
+  }
+
+  /* Butonlar */
+  button {
+    cursor: pointer;
+    background: var(--pri);
+    color: #fff;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    margin-bottom: 0; /* Butonlarda alttaki boşluğa gerek yok */
+    transition: background-color .2s ease;
+  }
+  button:hover {
+    background: var(--pri-2);
+  }
+  button.secondary {
+    background: var(--pri-2);
+  }
+  button.secondary:hover {
+    background: var(--pri);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--pri);
+    color: var(--pri);
+    padding-top: 10px; /* padding'i eşitle */
+    padding-bottom: 10px;
+  }
+  .btn-ghost:hover {
+    background: rgba(30, 60, 114, 0.05);
+  }
+  .danger {
+    background: #dc2626;
+    font-size: 12px;
+    padding: 6px 8px;
+    min-height: 28px;
+  }
+  .danger:hover {
+    background: #b91c1c;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .msg {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  .error { background: var(--err-bg); color: var(--err); }
+  .ok { background: var(--ok-bg); color: var(--ok); }
+
+  .flex {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  /* === HOCA PANELİ ÖZEL === */
+  .panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .panel-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+  }
+  
+  /* Panel Kontrol Grid'i */
+  .controls-grid {
+    display: grid;
+    /* Ekrana sığdığı kadar 200px'lik sütun koy, sığmazsa alt satıra at */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end; /* Her şeyin dibe yaslanmasını sağla */
+    margin-bottom: 24px;
+  }
+  .controls-grid .form-group {
+    margin-bottom: 0; /* Grid yönettiği için margin'i sıfırla */
+  }
+
+  #qrWrap {
+    text-align: center;
+    padding: 20px;
+    background: var(--bg);
+    border-radius: 12px;
+    margin-top: 24px;
+  }
+  #qrWrap #qrcode {
+    margin: 0 auto 16px auto;
+    display: inline-block; /* Ortalamak için */
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  #qrWrap #timer {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  #qrWrap button {
+    margin-top: 16px;
+    max-width: 200px; /* Buton çok yayılmasın */
+  }
+
+  /* === YENİLENMİŞ PROFESYONEL TABLO === */
+  #grid-container {
+    overflow-x: auto; /* Yatay kaydırma */
+    max-height: 65vh; /* Biraz daha yükseklik */
+    border: 1px solid var(--br);
+    border-radius: 12px;
+    /* Kenarlarda kaydırma olduğunu belirten gölgeler */
+    background:
+      linear-gradient(to right, white 30%, rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0), white 70%) 100% 0,
+      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.15), rgba(0,0,0,0)),
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.15), rgba(0,0,0,0)) 100% 0;
+    background-repeat: no-repeat;
+    background-color: white;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+
+  table#grid {
+    width: 100%;
+    min-width: 1600px; /* 14 hafta + diğer sütunlar için minimum genişlik */
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed; /* Sabit sütunlar için şart */
+  }
+
+  th, td {
+    padding: 12px; /* Daha ferah */
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid var(--br);
+    border-right: 1px solid var(--br);
+    white-space: nowrap; /* Kırılmayı engelle */
+  }
+  
+  /* Son hücrelerin kenarlıklarını kaldır */
+  tr:last-child td { border-bottom: 0; }
+  th:last-child, td:last-child { border-right: 0; }
+
+  th {
+    background: #f9fafb; /* Daha açık başlık */
+    position: sticky;
+    top: 0;
+    z-index: 3; /* Diğer sticky'lerin üstünde */
+    font-weight: 600;
+    border-bottom: 2px solid var(--br);
+  }
+  
+  /* Satır renklendirme (Zebra) */
+  #grid tr:nth-child(even) td {
+    background: #fcfcfd;
+  }
+
+  /* Renkli hücreler */
+  .cell-ok { background: #e8f5e9 !important; }
+  .cell-warn { background: #fff7cc !important; }
+  .cell-fail { background: #fde2e2 !important; }
+
+  /* Manuel mod */
+  .td-manual { cursor: pointer; }
+  .td-manual:hover {
+    outline: 2px dashed var(--pri);
+    outline-offset: -2px;
+    background: #f0f3ff !important;
+  }
+  
+  /* === ⭐ STICKY COLUMNS (SABİT SÜTUNLAR) === */
+  
+  /* Sütun genişliklerini tanımla */
+  #grid th:nth-child(1), #grid td:nth-child(1) { width: 60px; } /* Sil */
+  #grid th:nth-child(2), #grid td:nth-child(2) { width: 110px; } /* Öğr No */
+  #grid th:nth-child(3), #grid td:nth-child(3) { width: 180px; text-align: left;} /* Ad Soyad */
+
+  /* Pozisyonları sabitle */
+  #grid th:nth-child(1), #grid td:nth-child(1) { position: sticky; left: 0; z-index: 2; }
+  #grid th:nth-child(2), #grid td:nth-child(2) { position: sticky; left: 60px; z-index: 2; }
+  #grid th:nth-child(3), #grid td:nth-child(3) { position: sticky; left: 170px; z-index: 2; } /* 60 + 110 */
+
+  /* Sabitlenmiş sütunların arka planını ayarla (kayan içeriği gizlemek için) */
+  #grid th:nth-child(1),
+  #grid th:nth-child(2),
+  #grid th:nth-child(3) {
+    background: #f9fafb; /* Başlık arka planı */
+  }
+  
+  #grid td:nth-child(1),
+  #grid td:nth-child(2),
+  #grid td:nth-child(3) {
+    background: #fff; /* Tekil satır arka planı */
+  }
+
+  /* Zebra satırlar için de arka planı ayarla */
+  #grid tr:nth-child(even) td:nth-child(1),
+  #grid tr:nth-child(even) td:nth-child(2),
+  #grid tr:nth-child(even) td:nth-child(3) {
+    background: #fcfcfd; /* Çift satır arka planı */
+  }
+
+  /* Chip'ler */
+  .chip {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .chip.ok { background: #16a34a22; color: #166534; border: 1px solid #16a34a33; }
+  .chip.warn { background: #f59e0b22; color: #92400e; border: 1px solid #f59e0b33; }
+  .chip.fail { background: #ef444422; color: #991b1b; border: 1px solid #ef444433; }
 
   /* Collapsible create panel */
-  .is-hidden{height:0;overflow:hidden;padding-top:0;padding-bottom:0;opacity:0;transition:height .25s ease,opacity .2s ease,padding .25s ease}
-  .is-open{height:auto;opacity:1;padding-top:16px;padding-bottom:16px}
+  .is-hidden {
+    height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    transition: height .25s ease, opacity .2s ease, padding .25s ease, margin .25s ease;
+    margin-top: 0;
+  }
+  .is-open {
+    height: auto;
+    opacity: 1;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    margin-top: 16px;
+  }
 
   /* Spinner */
-  .spinner{
-    display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);
-    border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite
+  .spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, .4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
   }
-  .is-pending .spinner{display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .is-pending .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Mobil uyum */
-  @media (max-width:640px){
-    body{padding:12px} header{padding:14px} header h2{font-size:clamp(18px,4.5vw,22px)}
-    main{padding:14px} .row{gap:10px} .col{min-width:100%}
-    input,select,button{font-size:16px;padding:12px} button{min-height:44px} #qrWrap{text-align:center}
+  /* Mobil Uyum */
+  @media (max-width: 640px) {
+    body { padding: 0; }
+    .card { border-radius: 0; min-height: 100vh; }
+    header { padding: 16px; border-radius: 0; }
+    header h2 { font-size: 1.15rem; }
+    main { padding: 16px; }
+    .row { gap: 10px; }
+    .col { min-width: 100%; }
+    input, select, button { font-size: 16px; padding: 14px; }
+    button { min-height: 48px; }
+    #qrWrap { padding: 16px; }
+    .panel-header { flex-direction: column; align-items: flex-start; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+
 <div class="card">
   <header><h2>Yaşar Üniversitesi — Akıllı Yoklama</h2></header>
   <main>
 
-    <!-- ANA MENÜ -->
     <div id="menu" class="section active">
       <div class="row">
-        <!-- SOL: sadece giriş dursun -->
         <div class="col">
           <h3>Öğretim Üyesi Giriş</h3>
-          <input id="t-code" placeholder="Ders kodu"><br><br>
-          <input id="t-pass" placeholder="Şifre" type="password"><br><br>
+          <input id="t-code" placeholder="Ders kodu">
+          <input id="t-pass" placeholder="Şifre" type="password">
           <button id="btnLogin"><span class="lbl">Giriş Yap</span><span class="spinner" aria-hidden="true"></span></button>
           <div id="msg-login" class="msg" style="display:none"></div>
         </div>
 
-        <!-- SAĞ: ‘Ders Oluştur’ paneli gizli, butonla aç -->
         <div class="col">
           <div class="flex" style="justify-content:space-between">
             <h3 style="margin:0">Ders Oluştur</h3>
@@ -88,10 +423,9 @@
           </div>
 
           <section id="createPanel" class="is-hidden" hidden>
-            <br>
-            <input id="c-name" placeholder="Ders adı (BIL101)"><br><br>
-            <input id="c-code" placeholder="Ders kodu (BIL101)"><br><br>
-            <input id="c-teacher" placeholder="Öğretim üyesi"><br><br>
+            <input id="c-name" placeholder="Ders adı (BIL101)">
+            <input id="c-code" placeholder="Ders kodu (BIL101)">
+            <input id="c-teacher" placeholder="Öğretim üyesi">
             <div class="row">
               <div class="col">
                 <select id="c-type">
@@ -107,8 +441,8 @@
                   <option value="90">Devam şartı %90</option>
                 </select>
               </div>
-            </div><br>
-            <input id="c-pass" placeholder="Ders şifresi (hoca)" type="password"><br><br>
+            </div>
+            <input id="c-pass" placeholder="Ders şifresi (hoca)" type="password">
 
             <div class="flex" style="gap:8px">
               <button id="btnCreate"><span class="lbl">Dersi Oluştur</span><span class="spinner" aria-hidden="true"></span></button>
@@ -120,61 +454,65 @@
       </div>
     </div>
 
-    <!-- HOCA PANELİ -->
     <div id="panel" class="section">
-      <div class="flex">
-        <button class="secondary" id="btnLogout">← Çıkış</button>
-        <h3 id="courseTitle" style="margin:0"></h3>
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <button class="secondary" id="btnLogout">← Çıkış</button>
+          <h3 id="courseTitle"></h3>
+        </div>
         <span id="ruleChip" class="chip"></span>
       </div>
-      <br>
 
-      <div class="row">
-        <div class="col">
-          <label>Hafta seç</label>
+      <div class="controls-grid">
+        <div class="form-group">
+          <label for="week">Hafta Seç</label>
           <select id="week"><option value="">(seç)</option></select>
         </div>
-        <div class="col">
-          <label style="display:block;">Konum zorunlu</label>
-          <label style="display:inline-flex;align-items:center;gap:8px;">
-            <input id="geo-required" type="checkbox" checked />
-            <span>Etkin</span>
-          </label>
+        
+        <div class="form-group">
+          <label class="form-label">Yoklama Ayarları</label>
+          <div class="checkbox-group">
+            <label for="geo-required">
+              <input id="geo-required" type="checkbox" checked />
+              <span>Konum Zorunlu</span>
+            </label>
+            <label for="manual-mode">
+              <input id="manual-mode" type="checkbox" />
+              <span>Manuel Mod</span>
+            </label>
+          </div>
         </div>
-        <div class="col">
-          <label style="display:block;">Manuel yoklama</label>
-          <label style="display:inline-flex;align-items:center;gap:8px;">
-            <input id="manual-mode" type="checkbox" />
-            <span>Açık/Kapalı</span>
-          </label>
-        </div>
-        <div class="col">
+        
+        <div class="form-group">
+          <label class="form-label" style="visibility:hidden;">Başlat</label>
           <button id="btnStart"><span class="lbl">QR ile Yoklama Başlat</span><span class="spinner" aria-hidden="true"></span></button>
         </div>
       </div>
 
-      <div id="qrWrap" style="display:none;margin-top:10px">
+      <div id="qrWrap" style="display:none">
         <div id="qrcode"></div>
         <div id="timer" class="msg"></div>
         <button class="secondary" id="btnStop"><span class="lbl">Yoklamayı Durdur</span><span class="spinner" aria-hidden="true"></span></button>
       </div>
 
-      <div id="manualHint" class="msg" style="display:none; margin-top:12px;">
+      <div id="manualHint" class="msg ok" style="display:none; margin-top:16px;">
         Manuel mod açık: hücreye tıkla → boş → ✓ → ✗ → boş döngüsü. Sol baştaki çöp ikonu ile öğrenciyi silebilirsin.
       </div>
 
-      <h4 style="margin-top:16px">Öğrenci Listesi (Canlı)</h4>
+      <h4 style="margin-top:24px; margin-bottom: 12px;">Öğrenci Listesi (Canlı)</h4>
       <div id="listMsg" class="msg" style="display:none"></div>
-      <div style="overflow:auto;max-height:60vh"><table id="grid"></table></div>
+      
+      <div id="grid-container">
+        <table id="grid"></table>
+      </div>
     </div>
 
-    <!-- ÖĞRENCİ -->
     <div id="student" class="section">
       <h3>Öğrenci Yoklama</h3>
-      <input id="s-course" placeholder="Ders kodu"><br><br>
-      <div id="weekBox"><input id="s-week" type="number" min="1" max="14" placeholder="Hafta (1-14)"><br><br></div>
-      <input id="s-no" placeholder="Öğrenci No"><br><br>
-      <input id="s-name" placeholder="Ad Soyad"><br><br>
+      <input id="s-course" placeholder="Ders kodu">
+      <div id="weekBox"><input id="s-week" type="number" min="1" max="14" placeholder="Hafta (1-14)"></div>
+      <input id="s-no" placeholder="Öğrenci No">
+      <input id="s-name" placeholder="Ad Soyad">
       <button id="btnStu"><span class="lbl">Konumumu Kontrol Et ve Kaydet</span><span class="spinner" aria-hidden="true"></span></button>
       <div id="msg-stu" class="msg" style="display:none"></div>
     </div>
@@ -182,341 +520,358 @@
   </main>
 </div>
 
+
 <script>
   // === CONFIG ===
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxJwRh2kQ64OPGH-feKrcGe74I_G0joYRkd7I8zyO-uIoPm-qk4WPItiyBCT3OT8MkW_A/exec";
-  const CODE_RE = /^[A-Z0-9._-]{3,16}$/;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxJwRh2kQ64OPGH-feKrcGe74I_G0joYRkd7I8zyO-uIoPm-qk4WPItiyBCT3OT8MkW_A/exec";
+  const CODE_RE = /^[A-Z0-9._-]{3,16}$/;
 
-  // === STATE ===
-  let current = null; // {code,name,teacher,attendanceType,requiredPct}
-  let poll = null, tick = null, closedOnce=false, manual=false;
+  // === STATE ===
+  let current = null; // {code,name,teacher,attendanceType,requiredPct}
+  let poll = null, tick = null, closedOnce=false, manual=false;
 
-  // === EL SHORTCUTS ===
-  const $ = sel => document.querySelector(sel);
-  const byId = id => document.getElementById(id);
+  // === EL SHORTCUTS ===
+  const $ = sel => document.querySelector(sel);
+  const byId = id => document.getElementById(id);
 
-  // === INIT ===
-  // Week dropdown
-  (function(){ const w = byId('week'); for(let i=1;i<=14;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=i+'. Hafta'; w.appendChild(o);} })();
+  // === INIT ===
+  // Week dropdown
+  (function(){ const w = byId('week'); for(let i=1;i<=14;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=i+'. Hafta'; w.appendChild(o);} })();
 
-  // QR param → öğrenci form
-  (function(){
-    const p = new URLSearchParams(location.search);
-    const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
-    if (c) { show('student'); byId('s-course').value = c; }
-    if (t === 'hourly') { byId('weekBox').style.display='none'; byId('s-week').value=''; }
-    else if (w) { byId('s-week').value = w; }
-    window._geoRequired = (geo !== '0'); // default true
-  })();
+  // QR param → öğrenci form
+  (function(){
+    const p = new URLSearchParams(location.search);
+    const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
+    if (c) { show('student'); byId('s-course').value = c; }
+    if (t === 'hourly') { byId('weekBox').style.display='none'; byId('s-week').value=''; }
+    else if (w) { byId('s-week').value = w; }
+    window._geoRequired = (geo !== '0'); // default true
+  })();
 
-  // === VIEW SWITCH ===
-  function show(id){
-    ['menu','panel','student'].forEach(s=>byId(s).classList.remove('active'));
-    byId(id).classList.add('active');
-  }
+  // === VIEW SWITCH ===
+  function show(id){
+    ['menu','panel','student'].forEach(s=>byId(s).classList.remove('active'));
+    byId(id).classList.add('active');
+  }
 
-  function msg(id, text, ok){
-    const el = byId(id);
-    el.textContent = text;
-    el.className   = 'msg ' + (ok?'ok':'error');
-    el.style.display = 'block';
-  }
+  function msg(id, text, ok){
+    const el = byId(id);
+    el.textContent = text;
+    el.className   = 'msg ' + (ok?'ok':'error');
+    el.style.display = 'block';
+  }
 
-  // === FETCH WRAPPER ===
-  async function call(obj){
-    const res = await fetch(GAS_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(obj)
-    });
-    return res.json();
-  }
+  // === FETCH WRAPPER ===
+  async function call(obj){
+    const res = await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(obj)
+    });
+    return res.json();
+  }
 
-  // === PENDING UI ===
-  function withPending(btn, fn){
-    const lbl = btn.querySelector('.lbl');
-    const orig = lbl ? lbl.textContent : '';
-    btn.disabled = true;
-    btn.classList.add('is-pending');
-    return fn().finally(()=>{
-      btn.disabled = false;
-      btn.classList.remove('is-pending');
-      if (lbl) lbl.textContent = orig;
-    });
-  }
+  // === PENDING UI ===
+  function withPending(btn, fn){
+    const lbl = btn.querySelector('.lbl');
+    const orig = lbl ? lbl.textContent : '';
+    btn.disabled = true;
+    btn.classList.add('is-pending');
+    return fn().finally(()=>{
+      btn.disabled = false;
+      btn.classList.remove('is-pending');
+      if (lbl) lbl.textContent = orig;
+    });
+  }
 
-  // === CREATE PANEL TOGGLE ===
-  const createPanel = byId('createPanel');
-  const toggleBtn   = byId('btnToggleCreate');
-  const closeBtn    = byId('btnCloseCreate');
+  // === CREATE PANEL TOGGLE ===
+  const createPanel = byId('createPanel');
+  const toggleBtn   = byId('btnToggleCreate');
+  const closeBtn    = byId('btnCloseCreate');
 
-  function openCreatePanel(){
-    if (!createPanel.classList.contains('is-hidden')) return;
-    createPanel.hidden = false;
-    createPanel.style.height = '0px';
-    requestAnimationFrame(()=>{
-      createPanel.classList.add('is-open');
-      createPanel.classList.remove('is-hidden');
-      const h = createPanel.scrollHeight + 'px';
-      createPanel.style.height = h;
-      setTimeout(()=>{ createPanel.style.height='auto'; },260);
-    });
-    toggleBtn.setAttribute('aria-expanded','true');
-    setTimeout(()=> byId('c-code')?.focus(), 50);
-    toggleBtn.textContent = 'Paneli Kapat';
-  }
-  function closeCreatePanel(){
-    if (createPanel.classList.contains('is-hidden')) return;
-    const h = createPanel.scrollHeight + 'px';
-    createPanel.style.height = h;
-    requestAnimationFrame(()=>{
-      createPanel.classList.remove('is-open');
-      createPanel.classList.add('is-hidden');
-      createPanel.style.height = '0px';
-    });
-    toggleBtn.setAttribute('aria-expanded','false');
-    setTimeout(()=>{ createPanel.hidden = true; createPanel.style.height=''; },260);
-    toggleBtn.textContent = 'Paneli Aç';
-  }
-  toggleBtn.addEventListener('click', ()=> (createPanel.hidden||createPanel.classList.contains('is-hidden')) ? openCreatePanel() : closeCreatePanel());
-  closeBtn.addEventListener('click', closeCreatePanel);
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCreatePanel(); });
+  function openCreatePanel(){
+    if (!createPanel.classList.contains('is-hidden')) return;
+    createPanel.hidden = false;
+    createPanel.style.height = '0px';
+    requestAnimationFrame(()=>{
+      createPanel.classList.add('is-open');
+      createPanel.classList.remove('is-hidden');
+      const h = createPanel.scrollHeight + 'px';
+      createPanel.style.height = h;
+      setTimeout(()=>{ createPanel.style.height='auto'; },260);
+    });
+    toggleBtn.setAttribute('aria-expanded','true');
+    setTimeout(()=> byId('c-code')?.focus(), 50);
+    toggleBtn.textContent = 'Paneli Kapat';
+  }
+  function closeCreatePanel(){
+    if (createPanel.classList.contains('is-hidden')) return;
+    const h = createPanel.scrollHeight + 'px';
+    createPanel.style.height = h;
+    requestAnimationFrame(()=>{
+      createPanel.classList.remove('is-open');
+      createPanel.classList.add('is-hidden');
+      createPanel.style.height = '0px';
+    });
+    toggleBtn.setAttribute('aria-expanded','false');
+    setTimeout(()=>{ createPanel.hidden = true; createPanel.style.height=''; },260);
+    toggleBtn.textContent = 'Paneli Aç';
+  }
+  toggleBtn.addEventListener('click', ()=> (createPanel.hidden||createPanel.classList.contains('is-hidden')) ? openCreatePanel() : closeCreatePanel());
+  closeBtn.addEventListener('click', closeCreatePanel);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCreatePanel(); });
 
-  // === FRONT VALIDATION (server ile uyumlu) ===
-  function validateCreateForm(p){
-    if (!CODE_RE.test(p.courseCode.toUpperCase())) return "Ders kodu 3–16, A-Z 0-9 . _ - olmalı";
-    if (p.courseName.trim().length < 2) return "Ders adı en az 2 karakter olmalı";
-    if (p.teacherName.trim().length < 2) return "Öğretim üyesi adı en az 2 karakter olmalı";
-    if (p.password.trim().length < 4) return "Şifre en az 4 karakter olmalı";
-    return null;
-  }
+  // === FRONT VALIDATION (server ile uyumlu) ===
+  function validateCreateForm(p){
+    if (!CODE_RE.test(p.courseCode.toUpperCase())) return "Ders kodu 3–16, A-Z 0-9 . _ - olmalı";
+    if (p.courseName.trim().length < 2) return "Ders adı en az 2 karakter olmalı";
+    if (p.teacherName.trim().length < 2) return "Öğretim üyesi adı en az 2 karakter olmalı";
+    if (p.password.trim().length < 4) return "Şifre en az 4 karakter olmalı";
+    return null;
+  }
 
-  // === BUTTON HANDLERS ===
-  $('#btnCreate').addEventListener('click', ()=>{
-    const payload = {
-      action:'createCourse',
-      courseName: byId('c-name').value.trim(),
-      courseCode: byId('c-code').value.trim(),
-      teacherName:byId('c-teacher').value.trim(),
-      attendanceType: byId('c-type').value,
-      requiredPct: byId('c-req').value,
-      password: byId('c-pass').value
-    };
-    const err = validateCreateForm(payload);
-    if (err){ msg('msg-create', err, false); return; }
+  // === BUTTON HANDLERS ===
+  $('#btnCreate').addEventListener('click', ()=>{
+    const payload = {
+      action:'createCourse',
+      courseName: byId('c-name').value.trim(),
+      courseCode: byId('c-code').value.trim(),
+      teacherName:byId('c-teacher').value.trim(),
+      attendanceType: byId('c-type').value,
+      requiredPct: byId('c-req').value,
+      password: byId('c-pass').value
+    };
+    const err = validateCreateForm(payload);
+    if (err){ msg('msg-create', err, false); return; }
 
-    withPending($('#btnCreate'), async ()=>{
-      const r = await call(payload).catch(e=>({success:false,error:String(e)}));
-      if (r.success){
-        msg('msg-create','Ders oluşturuldu',true);
-        // istersen formu temizle:
-        // ['c-name','c-code','c-teacher','c-pass'].forEach(id=>byId(id).value='');
-        // setTimeout(()=>closeCreatePanel(), 400);
-      }else{
-        msg('msg-create','Hata: '+(r.error||'bilinmeyen'),false);
-      }
-    });
-  });
+    withPending($('#btnCreate'), async ()=>{
+      const r = await call(payload).catch(e=>({success:false,error:String(e)}));
+      if (r.success){
+        msg('msg-create','Ders oluşturuldu',true);
+        // istersen formu temizle:
+        // ['c-name','c-code','c-teacher','c-pass'].forEach(id=>byId(id).value='');
+        // setTimeout(()=>closeCreatePanel(), 400);
+      }else{
+        msg('msg-create','Hata: '+(r.error||'bilinmeyen'),false);
+      }
+    });
+  });
 
-  $('#btnLogin').addEventListener('click', ()=>{
-    const p = { action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value };
-    if (!p.courseCode || !p.password){ msg('msg-login','Ders kodu/şifre boş olamaz',false); return; }
-    withPending($('#btnLogin'), async ()=>{
-      const r = await call(p).catch(e=>({success:false,error:String(e)}));
-      if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false);
-      current = { code: p.courseCode.trim().toUpperCase(), name: r.courseName, teacher: r.teacherName, attendanceType: r.attendanceType, requiredPct: r.requiredPct };
-      byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
-      const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
-      buildHeader(); refreshTable(); show('panel');
-    });
-  });
+  $('#btnLogin').addEventListener('click', ()=>{
+    const p = { action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value };
+    if (!p.courseCode || !p.password){ msg('msg-login','Ders kodu/şifre boş olamaz',false); return; }
+  	  byId('msg-login').style.display = 'none'; // Hata mesajını temizle
+    withPending($('#btnLogin'), async ()=>{
+      const r = await call(p).catch(e=>({success:false,error:String(e)}));
+      if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false);
+      current = { code: p.courseCode.trim().toUpperCase(), name: r.courseName, teacher: r.teacherName, attendanceType: r.attendanceType, requiredPct: r.requiredPct };
+      byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
+      const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
+      buildHeader(); refreshTable(); show('panel');
+      byId('t-code').value = ''; byId('t-pass').value = ''; // Formu temizle
+    });
+  });
 
-  $('#btnLogout').addEventListener('click', ()=>{
-    current=null; clearInterval(poll); clearInterval(tick); show('menu');
-  });
+  $('#btnLogout').addEventListener('click', ()=>{
+    current=null; clearInterval(poll); clearInterval(tick); show('menu');
+    byId('msg-login').style.display = 'none'; // Çıkışta hata mesajını temizle
+  });
 
-  $('#btnStart').addEventListener('click', ()=>{
-    withPending($('#btnStart'), async ()=> startAttendance());
-  });
+  $('#btnStart').addEventListener('click', ()=>{
+    withPending($('#btnStart'), async ()=> startAttendance());
+  });
 
-  $('#btnStop').addEventListener('click', ()=>{
-    withPending($('#btnStop'), async ()=> endAttendance());
-  });
+  $('#btnStop').addEventListener('click', ()=>{
+    withPending($('#btnStop'), async ()=> endAttendance());
+  });
 
-  $('#manual-mode').addEventListener('change', ()=>{
-    manual = byId('manual-mode').checked;
-    byId('manualHint').style.display = manual ? 'block' : 'none';
-    buildHeader(); refreshTable();
-  });
+  $('#manual-mode').addEventListener('change', ()=>{
+    manual = byId('manual-mode').checked;
+    byId('manualHint').style.display = manual ? 'block' : 'none';
+    buildHeader(); refreshTable();
+  });
 
-  $('#btnStu').addEventListener('click', ()=>{
-    withPending($('#btnStu'), async ()=> submitAttendance());
-  });
+  $('#btnStu').addEventListener('click', ()=>{
+    withPending($('#btnStu'), async ()=> submitAttendance());
+  });
 
-  // === TABLE BUILD ===
-  function buildHeader(){
-    const g = byId('grid'); g.innerHTML='';
-    const tr = document.createElement('tr');
-    const thDel=document.createElement('th'); thDel.textContent=''; thDel.className='col-mini'; tr.appendChild(thDel);
-    ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
-    if (current && current.attendanceType==='weekly'){
-      for(let i=1;i<=14;i++){ const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); }
-      ['Devam%','Durum'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
-    }
-    g.appendChild(tr);
-  }
+  // === TABLE BUILD ===
+  function buildHeader(){
+    const g = byId('grid'); g.innerHTML='';
+    const tr = document.createElement('tr');
+    // thDel için sınıfı CSS'den sildim, burada gerek yok
+    const thDel=document.createElement('th'); thDel.textContent='Sil'; tr.appendChild(thDel);
+    ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
+    if (current && current.attendanceType==='weekly'){
+      for(let i=1;i<=14;i++){ const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); }
+      ['Devam%','Durum'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
+    }
+    g.appendChild(tr);
+  }
 
-  async function refreshTable(){
-    if (!current) return;
-    if (current.attendanceType!=='weekly'){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Saatlik modda tablo yok.'; return; }
+  async function refreshTable(){
+    if (!current) return;
+    if (current.attendanceType!=='weekly'){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Saatlik modda tablo yok.'; return; }
 
-    const res = await call({ action:'getCourseTable', courseCode: current.code }).catch(()=>({success:false}));
-    if (!res.success){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
-    byId('listMsg').style.display='none';
+    const res = await call({ action:'getCourseTable', courseCode: current.code }).catch(()=>({success:false}));
+    if (!res.success){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
+    byId('listMsg').style.display='none';
 
-    const g = byId('grid');
-    while (g.rows.length>1) g.deleteRow(1);
+    const g = byId('grid');
+    while (g.rows.length>1) g.deleteRow(1);
 
-    res.table.forEach(row=>{
-      const tr = document.createElement('tr');
+    res.table.forEach(row=>{
+      const tr = document.createElement('tr');
 
-      // Sil butonu
-      const tdDel=document.createElement('td'); tdDel.className='col-mini';
-      const btn=document.createElement('button'); btn.textContent='Sil'; btn.className='danger';
-      btn.title='Öğrenciyi sil';
-      btn.onclick=async ()=>{
-        if (!manual) return;
-        if (!confirm(`${row.number} - ${row.name} silinsin mi?`)) return;
-        await call({ action:'deleteStudent', courseCode: current.code, studentNumber: row.number }).catch(()=>{});
-        refreshTable();
-      };
-      if (!manual){ btn.disabled=true; btn.style.opacity='.5'; }
-      tdDel.appendChild(btn); tr.appendChild(tdDel);
+      // Sil butonu
+      const tdDel=document.createElement('td');
+      const btn=document.createElement('button'); btn.textContent='Sil'; btn.className='danger';
+      btn.title='Öğrenciyi sil';
+      btn.onclick=async ()=>{
+        if (!manual) return;
+        if (!confirm(`${row.number} - ${row.name} silinsin mi?`)) return;
+        await call({ action:'deleteStudent', courseCode: current.code, studentNumber: row.number }).catch(()=>{});
+        refreshTable();
+      };
+      if (!manual){ btn.disabled=true; btn.style.opacity='.5'; btn.style.cursor='not-allowed'; }
+      tdDel.appendChild(btn); tr.appendChild(tdDel);
 
-      // Numara / Ad
-      tr.appendChild(td(row.number));
-      tr.appendChild(td(row.name));
+      // Numara / Ad
+      tr.appendChild(td(row.number));
+      const tdName = td(row.name); tdName.style.textAlign = 'left'; tr.appendChild(tdName); // Adı sola yasla
 
-      // Haftalar
-      row.weeks.forEach((w,idx)=>{
-        const tdw = td(w==='✓'?'✓':(w==='✗'?'✗':''));
-        if (manual){
-          tdw.classList.add('td-manual');
-          tdw.dataset.week = (idx+1);
-          tdw.dataset.number = row.number;
-          tdw.onclick = () => cycleCell(tdw);
-        }
-        tr.appendChild(tdw);
-      });
+      // Haftalar
+      row.weeks.forEach((w,idx)=>{
+        const tdw = td(w==='✓'?'✓':(w==='✗'?'✗':''));
+        if (manual){
+          tdw.classList.add('td-manual');
+          tdw.dataset.week = (idx+1);
+          tdw.dataset.number = row.number;
+          tdw.onclick = () => cycleCell(tdw);
+        }
+        /* Hücre renklendirme */
+        if(w==='✓') tdw.className += ' cell-ok';
+        else if(w==='✗') tdw.className += ' cell-fail';
 
-      // Yüzde / Durum
-      const p = row.percent, st = row.status;
-      const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); tr.appendChild(pctTd);
-      const stTd  = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
+        tr.appendChild(tdw);
+      });
 
-      g.appendChild(tr);
-    });
+      // Yüzde / Durum
+      const p = row.percent, st = row.status;
+      const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); tr.appendChild(pctTd);
+      const stTd  = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
 
-    function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
-  }
+      g.appendChild(tr);
+    });
 
-  // === MANUAL CELL CYCLE ===
-  async function cycleCell(cell){
-    const week = parseInt(cell.dataset.week,10);
-    const number = cell.dataset.number;
-    const now = cell.textContent.trim();
-    const next = (now==='' ? '✓' : (now==='✓' ? '✗' : ''));
-    await call({ action:'setManualMark', courseCode: current.code, studentNumber: number, week, value: next }).catch(()=>{});
-    await refreshTable();
-  }
+    function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
+  }
 
-  // === QR ATTENDANCE ===
-  function qrSize(){ const w=Math.min(window.innerWidth,420); return Math.max(200,Math.min(280,Math.floor(w*0.6))); }
+  // === MANUAL CELL CYCLE ===
+  async function cycleCell(cell){
+    const week = parseInt(cell.dataset.week,10);
+    const number = cell.dataset.number;
+    const now = cell.textContent.trim();
+    const next = (now==='' ? '✓' : (now==='✓' ? '✗' : ''));
+    await call({ action:'setManualMark', courseCode: current.code, studentNumber: number, week, value: next }).catch(()=>{});
+  	  // Tüm tabloyu çekmek yerine sadece o hücreyi güncelle (Daha hızlı)
+	  cell.textContent = next;
+    cell.className = 'td-manual ';
+    if(next==='✓') cell.className += ' cell-ok';
+    else if(next==='✗') cell.className += ' cell-fail';
+    
+    // Yüzdeyi ve durumu yeniden hesaplatmak için tabloyu yenilemek (şimdilik) daha kolay.
+    // İdeal olarak, sunucudan sadece o satırın yeni yüzdesi/durumu istenirdi.
+    await refreshTable(); 
+  }
 
-  function startAttendance(){
-    if (!current) return;
-    if (current.attendanceType==='weekly' && !byId('week').value){ alert('Hafta seç'); return; }
+  // === QR ATTENDANCE ===
+  function qrSize(){ const w=Math.min(window.innerWidth,420); return Math.max(200,Math.min(280,Math.floor(w*0.7))); }
 
-    const base = location.href.split('?')[0];
-    const geo = byId('geo-required').checked ? '1' : '0';
-    const qrData = current.attendanceType==='hourly'
-      ? `${base}?c=${current.code}&t=hourly&geo=${geo}`
-      : `${base}?c=${current.code}&t=weekly&w=${byId('week').value}&geo=${geo}`;
+  function startAttendance(){
+    if (!current) return;
+    if (current.attendanceType==='weekly' && !byId('week').value){ alert('Hafta seç'); return; }
 
-    byId('qrcode').innerHTML='';
-    new QRCode(byId('qrcode'), { text: qrData, width: qrSize(), height: qrSize() });
-    byId('qrWrap').style.display='block';
+    const base = location.href.split('?')[0];
+    const geo = byId('geo-required').checked ? '1' : '0';
+    const qrData = current.attendanceType==='hourly'
+      ? `${base}?c=${current.code}&t=hourly&geo=${geo}`
+      : `${base}?c=${current.code}&t=weekly&w=${byId('week').value}&geo=${geo}`;
 
-    let end = Date.now()+5*60*1000; closedOnce=false;
-    clearInterval(tick);
-    tick=setInterval(async ()=>{
-      const left=end-Date.now();
-      if (left<=0){
-        byId('timer').textContent='Süre doldu';
-        clearInterval(tick);
-        await closeAndStop();
-        return;
-      }
-      const m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
-      byId('timer').textContent=`Kalan: ${m}:${String(s).padStart(2,'0')}`;
-    },1000);
+    byId('qrcode').innerHTML='';
+    new QRCode(byId('qrcode'), { text: qrData, width: qrSize(), height: qrSize() });
+    byId('qrWrap').style.display='block';
 
-    clearInterval(poll);
-    poll=setInterval(refreshTable, 5000);
-  }
+    let end = Date.now()+5*60*1000; closedOnce=false;
+    clearInterval(tick);
+    tick=setInterval(async ()=>{
+      const left=end-Date.now();
+      if (left<=0){
+        byId('timer').textContent='Süre doldu';
+        clearInterval(tick);
+        await closeAndStop();
+        return;
+      }
+      const m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
+      byId('timer').textContent=`Kalan Süre: ${m}:${String(s).padStart(2,'0')}`;
+    },1000);
 
-  async function endAttendance(){
-    if (!confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) return;
-    await closeAndStop();
-    if (poll) clearInterval(poll);
-    if (tick) clearInterval(tick);
-    byId('qrWrap').style.display='none';
-    byId('qrcode').innerHTML = '';
-    byId('timer').textContent = '';
-  }
+    clearInterval(poll);
+    poll=setInterval(refreshTable, 5000);
+  }
 
-  async function closeAndStop(){
-    if (closedOnce) return; closedOnce=true;
-    if (current && current.attendanceType==='weekly'){
-      const w = byId('week').value;
-      if (w){
-        await call({ action:'closeAttendance', courseCode: current.code, week: w }).catch(()=>{});
-        await refreshTable();
-      }
-    }
-  }
+  async function endAttendance(){
+    if (!confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) return;
+    await closeAndStop();
+    if (poll) clearInterval(poll);
+    if (tick) clearInterval(tick);
+    byId('qrWrap').style.display='none';
+    byId('qrcode').innerHTML = '';
+    byId('timer').textContent = '';
+  }
 
-  // === STUDENT SUBMIT ===
-  async function submitAttendance(){
-    const c = byId('s-course').value.trim();
-    const w = byId('s-week').value.trim();
-    const no = byId('s-no').value.trim();
-    const nm = byId('s-name').value.trim();
-    if (!c || !no || !nm) return msg('msg-stu','Boş alan var',false);
+  async function closeAndStop(){
+    if (closedOnce) return; closedOnce=true;
+    if (current && current.attendanceType==='weekly'){
+      const w = byId('week').value;
+      if (w){
+        await call({ action:'closeAttendance', courseCode: current.code, week: w }).catch(()=>{});
+        await refreshTable();
+      }
+    }
+  }
 
-    if (window._geoRequired === false) {
-      const res = await call({ action:'submitAttendance', courseCode:c, week:w, studentNumber:no, studentName:nm, geoRequired:false });
-      if (res.success){ msg('msg-stu','(GPS kapalı) Yoklama kaydedildi',true); byId('s-no').value=''; byId('s-name').value=''; }
-      else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
-      return;
-    }
+  // === STUDENT SUBMIT ===
+  async function submitAttendance(){
+    const c = byId('s-course').value.trim();
+    const w = byId('s-week').value.trim();
+    const no = byId('s-no').value.trim();
+    const nm = byId('s-name').value.trim();
+    if (!c || !no || !nm) return msg('msg-stu','Boş alan var',false);
 
-    if (!navigator.geolocation) return msg('msg-stu','Tarayıcın konum desteği vermiyor',false);
-    msg('msg-stu','Konum alınıyor...',true);
+    if (window._geoRequired === false) {
+      const res = await call({ action:'submitAttendance', courseCode:c, week:w, studentNumber:no, studentName:nm, geoRequired:false });
+      if (res.success){ msg('msg-stu','(GPS kapalı) Yoklama kaydedildi',true); byId('s-no').value=''; byId('s-name').value=''; }
+      else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
+      return;
+    }
 
-    return new Promise((resolve)=>{
-      navigator.geolocation.getCurrentPosition(async pos=>{
-        const res = await call({
-          action:'submitAttendance',
-          courseCode:c, week:w, studentNumber:no, studentName:nm,
-          lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
-        });
-        if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
-        else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
-        resolve();
-      }, err=>{ msg('msg-stu','Konum hatası: '+err.message,false); resolve(); }, {enableHighAccuracy:true, timeout:10000});
-    });
-  }
+    if (!navigator.geolocation) return msg('msg-stu','Tarayıcın konum desteği vermiyor',false);
+    msg('msg-stu','Konum alınıyor, lütfen bekle...',true);
+
+    return new Promise((resolve)=>{
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const res = await call({
+          action:'submitAttendance',
+          courseCode:c, week:w, studentNumber:no, studentName:nm,
+          lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
+        });
+        if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
+        else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
+        resolve();
+      }, err=>{ msg('msg-stu','Konum hatası: '+err.message,false); resolve(); }, {enableHighAccuracy:true, timeout:10000});
+    });
+  }
 </script>
 </body>
 </html>
