@@ -529,7 +529,8 @@
   // === STATE ===
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
   let poll = null, tick = null, closedOnce=false, manual=false;
-
+  let _APP_TOKEN = null; // <<< YENİ GÜVENLİK TOKEN'I
+	
   // === EL SHORTCUTS ===
   const $ = sel => document.querySelector(sel);
   const byId = id => document.getElementById(id);
@@ -664,6 +665,9 @@
     withPending($('#btnLogin'), async ()=>{
       const r = await call(p).catch(e=>({success:false,error:String(e)}));
       if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false);
+
+	  _APP_TOKEN = r.token; // <<< TOKEN'I BURADA SAKLA
+		
       current = { code: p.courseCode.trim().toUpperCase(), name: r.courseName, teacher: r.teacherName, attendanceType: r.attendanceType, requiredPct: r.requiredPct };
       byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
       const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
@@ -673,10 +677,12 @@
   });
 
   $('#btnLogout').addEventListener('click', ()=>{
-    current=null; clearInterval(poll); clearInterval(tick); show('menu');
-    byId('msg-login').style.display = 'none'; // Çıkışta hata mesajını temizle
+    current=null; 
+    _APP_TOKEN = null; // <<< TOKEN'I SIFIRLA
+    clearInterval(poll); clearInterval(tick); show('menu');
+    byId('msg-login').style.display = 'none'; // Çıkışta hata mesajını temizle
   });
-
+	
   $('#btnStart').addEventListener('click', ()=>{
     withPending($('#btnStart'), async ()=> startAttendance());
   });
@@ -709,16 +715,33 @@
     g.appendChild(tr);
   }
 
+  /**
+   * BURADAN AŞAĞISI GÜNCELLENDİ (refreshTable)
+   */
   async function refreshTable(){
     if (!current) return;
     if (current.attendanceType!=='weekly'){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Saatlik modda tablo yok.'; return; }
 
-    const res = await call({ action:'getCourseTable', courseCode: current.code }).catch(()=>({success:false}));
-    if (!res.success){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
+    // ⭐ DEĞİŞİKLİK 1: Token buraya eklendi
+    const res = await call({ 
+        action:'getCourseTable', 
+        courseCode: current.code,
+        token: _APP_TOKEN // Güvenlik token'ı eklendi
+    }).catch(()=>({success:false, error:'Sunucu hatası'}));
+
+    // Hata mesajını daha detaylı göster
+    if (!res.success){ 
+      byId('listMsg').style.display='block'; 
+      byId('listMsg').textContent='Tablo alınamadı. Hata: ' + (res.error || 'Bilinmeyen'); 
+      return; 
+    }
     byId('listMsg').style.display='none';
 
     const g = byId('grid');
     while (g.rows.length>1) g.deleteRow(1);
+
+    // 'td' oluşturmak için yardımcı fonksiyon (temiz kod için)
+    function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
 
     res.table.forEach(row=>{
       const tr = document.createElement('tr');
@@ -730,15 +753,26 @@
       btn.onclick=async ()=>{
         if (!manual) return;
         if (!confirm(`${row.number} - ${row.name} silinsin mi?`)) return;
-        await call({ action:'deleteStudent', courseCode: current.code, studentNumber: row.number }).catch(()=>{});
-        refreshTable();
+
+            // ⭐ DEĞİŞİKLİK 2: Token buraya eklendi
+        await call({ 
+                action:'deleteStudent', 
+                courseCode: current.code, 
+                studentNumber: row.number,
+                token: _APP_TOKEN // Güvenlik token'ı eklendi
+            }).catch(()=>{});
+
+        refreshTable(); // Silme sonrası tabloyu yenile
       };
+      // Manuel mod kapalıyken butonu düzgünce pasif yap
       if (!manual){ btn.disabled=true; btn.style.opacity='.5'; btn.style.cursor='not-allowed'; }
       tdDel.appendChild(btn); tr.appendChild(tdDel);
 
       // Numara / Ad
       tr.appendChild(td(row.number));
-      const tdName = td(row.name); tdName.style.textAlign = 'left'; tr.appendChild(tdName); // Adı sola yasla
+      const tdName = td(row.name); 
+      tdName.style.textAlign = 'left'; // Adı sola yasla (makyajlı versiyon)
+      tr.appendChild(tdName);
 
       // Haftalar
       row.weeks.forEach((w,idx)=>{
@@ -749,7 +783,7 @@
           tdw.dataset.number = row.number;
           tdw.onclick = () => cycleCell(tdw);
         }
-        /* Hücre renklendirme */
+        /* Hücre renklendirme (makyajlı versiyon) */
         if(w==='✓') tdw.className += ' cell-ok';
         else if(w==='✗') tdw.className += ' cell-fail';
 
@@ -763,9 +797,10 @@
 
       g.appendChild(tr);
     });
+  }
 
     function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
-  }
+  
 
   // === MANUAL CELL CYCLE ===
   async function cycleCell(cell){
@@ -773,16 +808,31 @@
     const number = cell.dataset.number;
     const now = cell.textContent.trim();
     const next = (now==='' ? '✓' : (now==='✓' ? '✗' : ''));
-    await call({ action:'setManualMark', courseCode: current.code, studentNumber: number, week, value: next }).catch(()=>{});
-  	  // Tüm tabloyu çekmek yerine sadece o hücreyi güncelle (Daha hızlı)
-	  cell.textContent = next;
-    cell.className = 'td-manual ';
-    if(next==='✓') cell.className += ' cell-ok';
-    else if(next==='✗') cell.className += ' cell-fail';
+
+    // ⭐ GÜNCELLEME: Güvenlik token'ı buraya eklendi
+    await call({ 
+        action:'setManualMark', 
+        courseCode: current.code, 
+        studentNumber: number, 
+        week: week, 
+        value: next,
+        token: _APP_TOKEN // <<< GÜVENLİK TOKEN'I
+    }).catch((err)=>{
+        // Eğer token süresi dolmuşsa vs. bir hata olursa,
+        // refreshTable() hatayı yakalayıp kullanıcıya gösterecektir.
+        console.error("setManualMark hatası:", err);
+    });
     
-    // Yüzdeyi ve durumu yeniden hesaplatmak için tabloyu yenilemek (şimdilik) daha kolay.
-    // İdeal olarak, sunucudan sadece o satırın yeni yüzdesi/durumu istenirdi.
-    await refreshTable(); 
+    // --- Bu kısımlar senin kodunla aynı ve DOĞRU ---
+
+  	// Tüm tabloyu çekmek yerine sadece o hücreyi güncelle (Anlık tepki için)
+	  cell.textContent = next;
+    cell.className = 'td-manual '; // Sınıfı sıfırla
+    if(next==='✓') cell.className += ' cell-ok';
+    else if(next==='✗') cell.className += ' cell-fail';
+    
+    // Yüzdeyi ve durumu yeniden hesaplatmak için tabloyu yenile.
+    await refreshTable(); 
   }
 
   // === QR ATTENDANCE ===
@@ -816,13 +866,15 @@
       byId('timer').textContent=`Kalan Süre: ${m}:${String(s).padStart(2,'0')}`;
     },1000);
 
-    clearInterval(poll);
+    // poll'u temizle (yoklama başlat'a tekrar tekrar basılırsa)
+    clearInterval(poll); 
+    // refreshTable'ı 5 saniyede bir çalıştır (güvenli fonksiyon)
     poll=setInterval(refreshTable, 5000);
   }
 
   async function endAttendance(){
     if (!confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) return;
-    await closeAndStop();
+    await closeAndStop(); // <-- Bu fonksiyon aşağıda güncellendi
     if (poll) clearInterval(poll);
     if (tick) clearInterval(tick);
     byId('qrWrap').style.display='none';
@@ -830,17 +882,33 @@
     byId('timer').textContent = '';
   }
 
+  /**
+   * === BU FONKSİYON GÜNCELLENDİ (closeAndStop) ===
+   */
   async function closeAndStop(){
     if (closedOnce) return; closedOnce=true;
     if (current && current.attendanceType==='weekly'){
       const w = byId('week').value;
       if (w){
-        await call({ action:'closeAttendance', courseCode: current.code, week: w }).catch(()=>{});
-        await refreshTable();
+        // ⭐ GÜNCELLEME: Güvenlik token'ı buraya eklendi
+        await call({ 
+            action:'closeAttendance', 
+            courseCode: current.code, 
+            week: w,
+            token: _APP_TOKEN // <<< GÜVENLİK TOKEN'I
+        }).catch((err)=>{
+            console.error("closeAttendance hatası:", err);
+        });
+
+        await refreshTable(); // Tabloyu son haliyle yenile
       }
     }
   }
 
+  /**
+   * === BU FONKSİYON GÜNCELLENMEDİ (submitAttendance) ===
+   * Bu bir öğrenci işlemidir ve token GEREKMEZ.
+   */
   // === STUDENT SUBMIT ===
   async function submitAttendance(){
     const c = byId('s-course').value.trim();
@@ -866,6 +934,7 @@
           courseCode:c, week:w, studentNumber:no, studentName:nm,
           lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
         });
+        // Öğrenci formu için hata mesajını daha detaylı göster (backend v3'e göre)
         if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
         else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
         resolve();
