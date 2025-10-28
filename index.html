@@ -1,53 +1,65 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Yaşar Üniversitesi Yoklama</title>
 <style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;background:#eef2f7;margin:0;padding:20px}
+  :root{
+    --pri:#1e3c72;
+    --pri-2:#304a80;
+    --bg:#eef2f7;
+    --ok:#166534; --ok-bg:#dcfce7;
+    --warn:#92400e; --warn-bg:#fff7cc;
+    --err:#991b1b; --err-bg:#fee2e2;
+    --br:#e5e7eb;
+  }
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;background:var(--bg);margin:0;padding:20px}
   .card{max-width:1100px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.1);overflow:hidden}
-  header{background:#1e3c72;color:#fff;padding:20px}
+  header{background:var(--pri);color:#fff;padding:20px}
   main{padding:20px}
   .row{display:flex;gap:16px;flex-wrap:wrap}
   .col{flex:1;min-width:260px}
-  input,select,button{width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px}
-  button{cursor:pointer;background:#1e3c72;color:#fff;border:none}
-  button.secondary{background:#6b7280}
+  input,select,button{width:100%;padding:10px;border:2px solid var(--br);border-radius:10px;font-size:14px}
+  button{cursor:pointer;background:var(--pri);color:#fff;border:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  button.secondary{background:var(--pri-2)}
+  .btn-ghost{background:transparent;border:1px solid var(--pri);color:var(--pri)}
   .danger{background:#dc2626}
   .section{display:none}.section.active{display:block}
   .msg{margin-top:10px;padding:10px;border-radius:8px}
-  .error{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
+  .error{background:var(--err-bg);color:var(--err)}.ok{background:var(--ok-bg);color:var(--ok)}
   table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px}
-  th,td{border:1px solid #e5e7eb;padding:8px;text-align:center;font-size:14px}
+  th,td{border:1px solid var(--br);padding:8px;text-align:center;font-size:14px}
   th{background:#f3f4f6;position:sticky;top:0}
-  .cell-ok{background:#e8f5e9} .cell-warn{background:#fff7cc} .cell-fail{background:#fde2e2}
+  .cell-ok{background:#e8f5e9}.cell-warn{background:#fff7cc}.cell-fail{background:#fde2e2}
   .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600}
   .chip.ok{background:#16a34a22;color:#166534;border:1px solid #16a34a}
   .chip.warn{background:#f59e0b22;color:#92400e;border:1px solid #f59e0b}
   .chip.fail{background:#ef444422;color:#991b1b;border:1px solid #ef4444}
   .flex{display:flex;gap:12px;align-items:center}
+  #grid{width:100%;table-layout:fixed;word-break:break-word}
+  #grid th,#grid td{padding:8px 6px}
+  .td-manual{cursor:pointer}.td-manual:hover{outline:2px dashed var(--pri);outline-offset:-2px}
+  .col-mini{width:48px}
+
+  /* Collapsible create panel */
+  .is-hidden{height:0;overflow:hidden;padding-top:0;padding-bottom:0;opacity:0;transition:height .25s ease,opacity .2s ease,padding .25s ease}
+  .is-open{height:auto;opacity:1;padding-top:16px;padding-bottom:16px}
+
+  /* Spinner */
+  .spinner{
+    display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite
+  }
+  .is-pending .spinner{display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   /* Mobil uyum */
-  @media (max-width: 640px) {
-    body { padding: 12px; }
-    header { padding: 14px; }
-    header h2 { font-size: clamp(18px, 4.5vw, 22px); }
-    main { padding: 14px; }
-    .row { gap: 10px; }
-    .col { min-width: 100%; }
-    input, select, button { font-size: 16px; padding: 12px; }
-    button { min-height: 44px; }
-    #qrWrap { text-align: center; }
+  @media (max-width:640px){
+    body{padding:12px} header{padding:14px} header h2{font-size:clamp(18px,4.5vw,22px)}
+    main{padding:14px} .row{gap:10px} .col{min-width:100%}
+    input,select,button{font-size:16px;padding:12px} button{min-height:44px} #qrWrap{text-align:center}
   }
-  @media (min-width: 641px) and (max-width: 1024px) {
-    .col { min-width: 320px; }
-  }
-  #grid { width:100%; table-layout:fixed; word-break:break-word; }
-  #grid th, #grid td { padding:8px 6px; }
-  .td-manual { cursor: pointer; }
-  .td-manual:hover { outline:2px dashed #1e3c72; outline-offset:-2px; }
-  .col-mini { width:48px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -56,51 +68,63 @@
   <header><h2>Yaşar Üniversitesi — Akıllı Yoklama</h2></header>
   <main>
 
-    <!-- Menü -->
+    <!-- ANA MENÜ -->
     <div id="menu" class="section active">
       <div class="row">
-        <div class="col">
-          <h3>Ders Oluştur</h3>
-          <input id="c-name" placeholder="Ders adı (BIL101)"><br><br>
-          <input id="c-code" placeholder="Ders kodu (BIL101)"><br><br>
-          <input id="c-teacher" placeholder="Öğretim üyesi"><br><br>
-          <div class="row">
-            <div class="col">
-              <select id="c-type">
-                <option value="weekly">Haftalık (14 hafta)</option>
-                <option value="hourly">Saatlik</option>
-              </select>
-            </div>
-            <div class="col">
-              <select id="c-req">
-                <option value="70">Devam şartı %70</option>
-                <option value="75">Devam şartı %75</option>
-                <option value="80">Devam şartı %80</option>
-                <option value="85">Devam şartı %85</option>
-                <option value="90">Devam şartı %90</option>
-              </select>
-            </div>
-          </div><br>
-          <input id="c-pass" placeholder="Ders şifresi (hoca)" type="password"><br><br>
-          <button onclick="createCourse()">Dersi Oluştur</button>
-          <div id="msg-create" class="msg" style="display:none"></div>
-        </div>
-
+        <!-- SOL: sadece giriş dursun -->
         <div class="col">
           <h3>Öğretim Üyesi Giriş</h3>
           <input id="t-code" placeholder="Ders kodu"><br><br>
           <input id="t-pass" placeholder="Şifre" type="password"><br><br>
-          <button onclick="teacherLogin()">Giriş Yap</button>
+          <button id="btnLogin"><span class="lbl">Giriş Yap</span><span class="spinner" aria-hidden="true"></span></button>
           <div id="msg-login" class="msg" style="display:none"></div>
+        </div>
+
+        <!-- SAĞ: ‘Ders Oluştur’ paneli gizli, butonla aç -->
+        <div class="col">
+          <div class="flex" style="justify-content:space-between">
+            <h3 style="margin:0">Ders Oluştur</h3>
+            <button id="btnToggleCreate" class="btn-ghost" type="button" aria-expanded="false" aria-controls="createPanel">Paneli Aç</button>
+          </div>
+
+          <section id="createPanel" class="is-hidden" hidden>
+            <br>
+            <input id="c-name" placeholder="Ders adı (BIL101)"><br><br>
+            <input id="c-code" placeholder="Ders kodu (BIL101)"><br><br>
+            <input id="c-teacher" placeholder="Öğretim üyesi"><br><br>
+            <div class="row">
+              <div class="col">
+                <select id="c-type">
+                  <option value="weekly" selected>Haftalık (14 hafta)</option>
+                </select>
+              </div>
+              <div class="col">
+                <select id="c-req">
+                  <option value="70">Devam şartı %70</option>
+                  <option value="75">Devam şartı %75</option>
+                  <option value="80">Devam şartı %80</option>
+                  <option value="85">Devam şartı %85</option>
+                  <option value="90">Devam şartı %90</option>
+                </select>
+              </div>
+            </div><br>
+            <input id="c-pass" placeholder="Ders şifresi (hoca)" type="password"><br><br>
+
+            <div class="flex" style="gap:8px">
+              <button id="btnCreate"><span class="lbl">Dersi Oluştur</span><span class="spinner" aria-hidden="true"></span></button>
+              <button id="btnCloseCreate" class="btn-ghost" type="button">Kapat</button>
+            </div>
+            <div id="msg-create" class="msg" style="display:none"></div>
+          </section>
         </div>
       </div>
     </div>
 
-    <!-- Hoca paneli -->
+    <!-- HOCA PANELİ -->
     <div id="panel" class="section">
       <div class="flex">
-        <button class="secondary" onclick="logout()">← Çıkış</button>
-        <h3 id="courseTitle"></h3>
+        <button class="secondary" id="btnLogout">← Çıkış</button>
+        <h3 id="courseTitle" style="margin:0"></h3>
         <span id="ruleChip" class="chip"></span>
       </div>
       <br>
@@ -108,10 +132,7 @@
       <div class="row">
         <div class="col">
           <label>Hafta seç</label>
-          <select id="week">
-            <option value="">(seç)</option>
-            <script>for(let i=1;i<=14;i++)document.write(`<option value="${i}">${i}. Hafta</option>`)</script>
-          </select>
+          <select id="week"><option value="">(seç)</option></select>
         </div>
         <div class="col">
           <label style="display:block;">Konum zorunlu</label>
@@ -128,14 +149,14 @@
           </label>
         </div>
         <div class="col">
-          <button onclick="startAttendance()">QR ile Yoklama Başlat</button>
+          <button id="btnStart"><span class="lbl">QR ile Yoklama Başlat</span><span class="spinner" aria-hidden="true"></span></button>
         </div>
       </div>
 
       <div id="qrWrap" style="display:none;margin-top:10px">
         <div id="qrcode"></div>
         <div id="timer" class="msg"></div>
-        <button class="secondary" onclick="endAttendance()">Yoklamayı Durdur</button>
+        <button class="secondary" id="btnStop"><span class="lbl">Yoklamayı Durdur</span><span class="spinner" aria-hidden="true"></span></button>
       </div>
 
       <div id="manualHint" class="msg" style="display:none; margin-top:12px;">
@@ -144,21 +165,17 @@
 
       <h4 style="margin-top:16px">Öğrenci Listesi (Canlı)</h4>
       <div id="listMsg" class="msg" style="display:none"></div>
-      <div style="overflow:auto;max-height:60vh">
-        <table id="grid"></table>
-      </div>
+      <div style="overflow:auto;max-height:60vh"><table id="grid"></table></div>
     </div>
 
-    <!-- Öğrenci -->
+    <!-- ÖĞRENCİ -->
     <div id="student" class="section">
       <h3>Öğrenci Yoklama</h3>
       <input id="s-course" placeholder="Ders kodu"><br><br>
-      <div id="weekBox">
-        <input id="s-week" type="number" min="1" max="14" placeholder="Hafta (1-14)"><br><br>
-      </div>
+      <div id="weekBox"><input id="s-week" type="number" min="1" max="14" placeholder="Hafta (1-14)"><br><br></div>
       <input id="s-no" placeholder="Öğrenci No"><br><br>
       <input id="s-name" placeholder="Ad Soyad"><br><br>
-      <button onclick="submitAttendance()">Konumumu Kontrol Et ve Kaydet</button>
+      <button id="btnStu"><span class="lbl">Konumumu Kontrol Et ve Kaydet</span><span class="spinner" aria-hidden="true"></span></button>
       <div id="msg-stu" class="msg" style="display:none"></div>
     </div>
 
@@ -166,13 +183,23 @@
 </div>
 
 <script>
-  // KENDİ /exec URL'İN
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxi4S7gqedIHajYnx8XSg-E5aXNmN2rimzro4l_LitX2Ou-RvSvARts4zaJDjYkJpcvNg/exec";
+  // === CONFIG ===
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxJwRh2kQ64OPGH-feKrcGe74I_G0joYRkd7I8zyO-uIoPm-qk4WPItiyBCT3OT8MkW_A/exec";
+  const CODE_RE = /^[A-Z0-9._-]{3,16}$/;
 
+  // === STATE ===
   let current = null; // {code,name,teacher,attendanceType,requiredPct}
   let poll = null, tick = null, closedOnce=false, manual=false;
 
-  // QR parametreleri → öğrenci formu
+  // === EL SHORTCUTS ===
+  const $ = sel => document.querySelector(sel);
+  const byId = id => document.getElementById(id);
+
+  // === INIT ===
+  // Week dropdown
+  (function(){ const w = byId('week'); for(let i=1;i<=14;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=i+'. Hafta'; w.appendChild(o);} })();
+
+  // QR param → öğrenci form
   (function(){
     const p = new URLSearchParams(location.search);
     const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
@@ -182,58 +209,155 @@
     window._geoRequired = (geo !== '0'); // default true
   })();
 
-  // ===== helpers =====
-  function byId(x){return document.getElementById(x)}
-  function show(id){['menu','panel','student'].forEach(s=>byId(s).classList.remove('active')); byId(id).classList.add('active')}
-  function msg(id, text, ok){const el=byId(id); el.textContent=text; el.className='msg '+(ok?'ok':'error'); el.style.display='block';}
-  async function call(obj){ const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)}); return r.json(); }
-  function qrSize(){ const w=Math.min(window.innerWidth,420); return Math.max(200,Math.min(280,Math.floor(w*0.6))); }
+  // === VIEW SWITCH ===
+  function show(id){
+    ['menu','panel','student'].forEach(s=>byId(s).classList.remove('active'));
+    byId(id).classList.add('active');
+  }
 
-  // ===== Create Course =====
-  async function createCourse(){
-    const res = await call({
+  function msg(id, text, ok){
+    const el = byId(id);
+    el.textContent = text;
+    el.className   = 'msg ' + (ok?'ok':'error');
+    el.style.display = 'block';
+  }
+
+  // === FETCH WRAPPER ===
+  async function call(obj){
+    const res = await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(obj)
+    });
+    return res.json();
+  }
+
+  // === PENDING UI ===
+  function withPending(btn, fn){
+    const lbl = btn.querySelector('.lbl');
+    const orig = lbl ? lbl.textContent : '';
+    btn.disabled = true;
+    btn.classList.add('is-pending');
+    return fn().finally(()=>{
+      btn.disabled = false;
+      btn.classList.remove('is-pending');
+      if (lbl) lbl.textContent = orig;
+    });
+  }
+
+  // === CREATE PANEL TOGGLE ===
+  const createPanel = byId('createPanel');
+  const toggleBtn   = byId('btnToggleCreate');
+  const closeBtn    = byId('btnCloseCreate');
+
+  function openCreatePanel(){
+    if (!createPanel.classList.contains('is-hidden')) return;
+    createPanel.hidden = false;
+    createPanel.style.height = '0px';
+    requestAnimationFrame(()=>{
+      createPanel.classList.add('is-open');
+      createPanel.classList.remove('is-hidden');
+      const h = createPanel.scrollHeight + 'px';
+      createPanel.style.height = h;
+      setTimeout(()=>{ createPanel.style.height='auto'; },260);
+    });
+    toggleBtn.setAttribute('aria-expanded','true');
+    setTimeout(()=> byId('c-code')?.focus(), 50);
+    toggleBtn.textContent = 'Paneli Kapat';
+  }
+  function closeCreatePanel(){
+    if (createPanel.classList.contains('is-hidden')) return;
+    const h = createPanel.scrollHeight + 'px';
+    createPanel.style.height = h;
+    requestAnimationFrame(()=>{
+      createPanel.classList.remove('is-open');
+      createPanel.classList.add('is-hidden');
+      createPanel.style.height = '0px';
+    });
+    toggleBtn.setAttribute('aria-expanded','false');
+    setTimeout(()=>{ createPanel.hidden = true; createPanel.style.height=''; },260);
+    toggleBtn.textContent = 'Paneli Aç';
+  }
+  toggleBtn.addEventListener('click', ()=> (createPanel.hidden||createPanel.classList.contains('is-hidden')) ? openCreatePanel() : closeCreatePanel());
+  closeBtn.addEventListener('click', closeCreatePanel);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCreatePanel(); });
+
+  // === FRONT VALIDATION (server ile uyumlu) ===
+  function validateCreateForm(p){
+    if (!CODE_RE.test(p.courseCode.toUpperCase())) return "Ders kodu 3–16, A-Z 0-9 . _ - olmalı";
+    if (p.courseName.trim().length < 2) return "Ders adı en az 2 karakter olmalı";
+    if (p.teacherName.trim().length < 2) return "Öğretim üyesi adı en az 2 karakter olmalı";
+    if (p.password.trim().length < 4) return "Şifre en az 4 karakter olmalı";
+    return null;
+  }
+
+  // === BUTTON HANDLERS ===
+  $('#btnCreate').addEventListener('click', ()=>{
+    const payload = {
       action:'createCourse',
       courseName: byId('c-name').value.trim(),
       courseCode: byId('c-code').value.trim(),
-      teacherName: byId('c-teacher').value.trim(),
+      teacherName:byId('c-teacher').value.trim(),
       attendanceType: byId('c-type').value,
       requiredPct: byId('c-req').value,
       password: byId('c-pass').value
-    }).catch(err=>({success:false,error:String(err)}));
-    if (res.success) msg('msg-create','Ders oluşturuldu',true);
-    else msg('msg-create','Hata: '+(res.error||'bilinmeyen'),false);
-  }
+    };
+    const err = validateCreateForm(payload);
+    if (err){ msg('msg-create', err, false); return; }
 
-  // ===== Teacher Login =====
-  async function teacherLogin(){
-    const res = await call({ action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value })
-      .catch(err=>({success:false,error:String(err)}));
-    if (!res.success) return msg('msg-login','Hata: '+(res.error||'giriş başarısız'),false);
-    current = { code: byId('t-code').value.trim(), name: res.courseName, teacher: res.teacherName, attendanceType: res.attendanceType, requiredPct: res.requiredPct };
-    byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
-    const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
-    buildHeader();
-    refreshTable();
-    show('panel');
-  }
-
-  function logout(){ current=null; clearInterval(poll); clearInterval(tick); show('menu'); }
-
-  // ===== Manuel mod toggle =====
-  byId('manual-mode').addEventListener('change', () => {
-    manual = byId('manual-mode').checked;
-    byId('manualHint').style.display = manual ? 'block' : 'none';
-    buildHeader(); // sil kolonu vs güncelle
-    refreshTable();
+    withPending($('#btnCreate'), async ()=>{
+      const r = await call(payload).catch(e=>({success:false,error:String(e)}));
+      if (r.success){
+        msg('msg-create','Ders oluşturuldu',true);
+        // istersen formu temizle:
+        // ['c-name','c-code','c-teacher','c-pass'].forEach(id=>byId(id).value='');
+        // setTimeout(()=>closeCreatePanel(), 400);
+      }else{
+        msg('msg-create','Hata: '+(r.error||'bilinmeyen'),false);
+      }
+    });
   });
 
-  // ===== Table header =====
+  $('#btnLogin').addEventListener('click', ()=>{
+    const p = { action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value };
+    if (!p.courseCode || !p.password){ msg('msg-login','Ders kodu/şifre boş olamaz',false); return; }
+    withPending($('#btnLogin'), async ()=>{
+      const r = await call(p).catch(e=>({success:false,error:String(e)}));
+      if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false);
+      current = { code: p.courseCode.trim().toUpperCase(), name: r.courseName, teacher: r.teacherName, attendanceType: r.attendanceType, requiredPct: r.requiredPct };
+      byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.attendanceType==='weekly'?'Haftalık':'Saatlik'})`;
+      const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
+      buildHeader(); refreshTable(); show('panel');
+    });
+  });
+
+  $('#btnLogout').addEventListener('click', ()=>{
+    current=null; clearInterval(poll); clearInterval(tick); show('menu');
+  });
+
+  $('#btnStart').addEventListener('click', ()=>{
+    withPending($('#btnStart'), async ()=> startAttendance());
+  });
+
+  $('#btnStop').addEventListener('click', ()=>{
+    withPending($('#btnStop'), async ()=> endAttendance());
+  });
+
+  $('#manual-mode').addEventListener('change', ()=>{
+    manual = byId('manual-mode').checked;
+    byId('manualHint').style.display = manual ? 'block' : 'none';
+    buildHeader(); refreshTable();
+  });
+
+  $('#btnStu').addEventListener('click', ()=>{
+    withPending($('#btnStu'), async ()=> submitAttendance());
+  });
+
+  // === TABLE BUILD ===
   function buildHeader(){
     const g = byId('grid'); g.innerHTML='';
     const tr = document.createElement('tr');
-    // Sil kolonu
     const thDel=document.createElement('th'); thDel.textContent=''; thDel.className='col-mini'; tr.appendChild(thDel);
-    // Temel kolonlar
     ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     if (current && current.attendanceType==='weekly'){
       for(let i=1;i<=14;i++){ const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); }
@@ -242,13 +366,12 @@
     g.appendChild(tr);
   }
 
-  // ===== Fetch + render table =====
   async function refreshTable(){
     if (!current) return;
     if (current.attendanceType!=='weekly'){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Saatlik modda tablo yok.'; return; }
 
     const res = await call({ action:'getCourseTable', courseCode: current.code }).catch(()=>({success:false}));
-    if (!res.success) { byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
+    if (!res.success){ byId('listMsg').style.display='block'; byId('listMsg').textContent='Tablo alınamadı'; return; }
     byId('listMsg').style.display='none';
 
     const g = byId('grid');
@@ -259,10 +382,10 @@
 
       // Sil butonu
       const tdDel=document.createElement('td'); tdDel.className='col-mini';
-      const btn=document.createElement('button'); btn.textContent='🗑'; btn.className='danger';
+      const btn=document.createElement('button'); btn.textContent='Sil'; btn.className='danger';
       btn.title='Öğrenciyi sil';
       btn.onclick=async ()=>{
-        if (!manual) return; // manuel değilse izin yok
+        if (!manual) return;
         if (!confirm(`${row.number} - ${row.name} silinsin mi?`)) return;
         await call({ action:'deleteStudent', courseCode: current.code, studentNumber: row.number }).catch(()=>{});
         refreshTable();
@@ -286,10 +409,10 @@
         tr.appendChild(tdw);
       });
 
-      // Yüzde / Durum (renk sınıfı backend'in OK/WARN/FAIL çıktısına göre)
+      // Yüzde / Durum
       const p = row.percent, st = row.status;
       const pctTd = td(p+'%'); pctTd.className = st==='OK'?'cell-ok':(st==='WARN'?'cell-warn':'cell-fail'); tr.appendChild(pctTd);
-      const stTd = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
+      const stTd  = td(st==='OK'?'Uygun':(st==='WARN'?'Sınırda':'Kaldı')); stTd.className=pctTd.className; tr.appendChild(stTd);
 
       g.appendChild(tr);
     });
@@ -297,19 +420,19 @@
     function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
   }
 
-  // ===== Manuel: hücre döngüsü ('', '✓', '✗' → '')
+  // === MANUAL CELL CYCLE ===
   async function cycleCell(cell){
     const week = parseInt(cell.dataset.week,10);
     const number = cell.dataset.number;
     const now = cell.textContent.trim();
-    const next = (now==='' ? '✓' : (now==='✓' ? '✗' : '')); // boş → ✓ → ✗ → boş
-
-    // backend'e yaz
+    const next = (now==='' ? '✓' : (now==='✓' ? '✗' : ''));
     await call({ action:'setManualMark', courseCode: current.code, studentNumber: number, week, value: next }).catch(()=>{});
     await refreshTable();
   }
 
-  // ===== Start attendance + QR =====
+  // === QR ATTENDANCE ===
+  function qrSize(){ const w=Math.min(window.innerWidth,420); return Math.max(200,Math.min(280,Math.floor(w*0.6))); }
+
   function startAttendance(){
     if (!current) return;
     if (current.attendanceType==='weekly' && !byId('week').value){ alert('Hafta seç'); return; }
@@ -331,7 +454,7 @@
       if (left<=0){
         byId('timer').textContent='Süre doldu';
         clearInterval(tick);
-        await closeAndStop(); // süre dolunca boşları ✗ yap
+        await closeAndStop();
         return;
       }
       const m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
@@ -342,7 +465,6 @@
     poll=setInterval(refreshTable, 5000);
   }
 
-  // ===== Stop attendance (erken bitir)
   async function endAttendance(){
     if (!confirm("Yoklamayı şimdi durdurmak istiyor musunuz?")) return;
     await closeAndStop();
@@ -364,7 +486,7 @@
     }
   }
 
-  // ===== Student submit =====
+  // === STUDENT SUBMIT ===
   async function submitAttendance(){
     const c = byId('s-course').value.trim();
     const w = byId('s-week').value.trim();
@@ -382,15 +504,18 @@
     if (!navigator.geolocation) return msg('msg-stu','Tarayıcın konum desteği vermiyor',false);
     msg('msg-stu','Konum alınıyor...',true);
 
-    navigator.geolocation.getCurrentPosition(async pos=>{
-      const res = await call({
-        action:'submitAttendance',
-        courseCode:c, week:w, studentNumber:no, studentName:nm,
-        lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
-      });
-      if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
-      else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
-    }, err=> msg('msg-stu','Konum hatası: '+err.message,false), {enableHighAccuracy:true, timeout:10000});
+    return new Promise((resolve)=>{
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const res = await call({
+          action:'submitAttendance',
+          courseCode:c, week:w, studentNumber:no, studentName:nm,
+          lat:pos.coords.latitude, lon:pos.coords.longitude, geoRequired:true
+        });
+        if (res.success){ msg('msg-stu','Yoklama kaydedildi ('+res.distance+'m)',true); byId('s-no').value=''; byId('s-name').value=''; }
+        else msg('msg-stu','Hata: '+(res.error||'kayıt başarısız'),false);
+        resolve();
+      }, err=>{ msg('msg-stu','Konum hatası: '+err.message,false); resolve(); }, {enableHighAccuracy:true, timeout:10000});
+    });
   }
 </script>
 </body>
