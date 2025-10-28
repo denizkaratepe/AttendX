@@ -41,14 +41,12 @@
     border-radius: 10px; font-size: 14px;
     transition: border-color .2s ease, box-shadow .2s ease;
   }
-  /* <br> yerine margin */
   input:not([type="checkbox"]), select { margin-bottom: 16px; } 
 
   input:not([type="checkbox"]):focus, select:focus {
     outline: none; border-color: var(--pri-2);
     box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.2);
   }
-  /* Doğrulama (Validation) stilleri */
   input:invalid:not(:placeholder-shown) {
     border-color: var(--err);
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
@@ -391,7 +389,7 @@
       <div id="addStudentContainer">
         <h5>Manuel Öğrenci Ekle</h5>
         <div class="add-student-form">
-          <input id="new-s-no" type="tel" inputmode="numeric" placeholder="Öğrenci No (12 Hane)" maxlength="12">
+          <input id="new-s-no" type="tel" inputmode="numeric" placeholder="Öğrenci No (11 Hane)" maxlength="11">
           <input id="new-s-name" type="text" placeholder="Ad Soyad (Sadece Harf)">
           <button id="btnAddStudent"><span class="lbl">Ekle</span><span class="spinner" aria-hidden="true"></span></button>
         </div>
@@ -428,14 +426,17 @@
       <div id="weekBox"><input id="s-week" type="number" min="1" max="17" placeholder="Hafta (1-17)"></div>
       
       <input id="s-no" type="tel" inputmode="numeric" 
-             placeholder="Öğrenci No (12 Hane)" 
-             maxlength="12" pattern="[0-9]{12}"
-             title="Lütfen 12 haneli öğrenci numaranızı girin." required>
+             placeholder="Öğrenci No (11 Hane)" 
+             maxlength="11"
+             pattern="[0-9]{11}"
+             title="Lütfen 11 haneli öğrenci numaranızı girin."
+             required>
              
       <input id="s-name" type="text" 
              placeholder="Ad Soyad (Sadece Harf)"
              pattern="[a-zA-ZçÇğĞıİöÖşŞüÜ\s]+"
-             title="Lütfen sadece harf ve boşluk girin." required>
+             title="Lütfen sadece harf ve boşluk girin."
+             required>
              
       <button id="btnStu"><span class="lbl">Konumumu Kontrol Et ve Kaydet</span><span class="spinner" aria-hidden="true"></span></button>
       <div id="msg-stu" class="msg" style="display:none"></div>
@@ -458,16 +459,16 @@
 
 <script>
   // === CONFIG ===
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwz2V4FF1EpqKM342eL5UHvZ9S94TNt7__X2jXBHsgrSndVWemnR3dy66On9uoQFn-gWA/exec"; // DİKKAT! YENİ DAĞITIM URL'Sİ ŞART
-  const REGEX_STUDENT_NO = /^[0-9]{12}$/;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyOpzv5U9x0LjcGXcMqa7rF4wEO_9ATfL_z-r4NzsBt1q_weaWfyG_-Wbozj27ishvz3A/exec"; // DİKKAT! YENİ DAĞITIM URL'Sİ ŞART
+  
+  // GÜNCELLEME 2 (11 Hane): REGEX değişti
+  const REGEX_STUDENT_NO = /^[0-9]{11}$/;
   const REGEX_STUDENT_NAME = /^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]+$/;
 
   // === STATE ===
-  let current = null; // Artık { code, name, ... , totalWeeks } içerecek
+  let current = null;
   let poll = null, tick = null, closedOnce=false, manual=false;
   let _APP_TOKEN = null;
-  
-  // QR State
   let _CURRENT_QR_DATA = "";
   let _CURRENT_QR_SIZE = 280;
   let _MODAL_QR_SIZE = 400;
@@ -477,9 +478,6 @@
   const byId = id => document.getElementById(id);
 
   // === INIT ===
-  // GÜNCELLEME 2: 'week' dropdown'ı artık dinamik olarak 'login' sonrası dolacak
-  // (function(){ const w = byId('week'); ... })(); // BU SATIR SİLİNDİ
-  
   (function(){
     const p = new URLSearchParams(location.search);
     const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
@@ -561,13 +559,12 @@
 
   // === BUTTON HANDLERS ===
   $('#btnCreate').addEventListener('click', ()=>{
-    // GÜNCELLEME 2: numWeeks eklendi
     const payload = {
       action:'createCourse',
       courseName: byId('c-name').value.trim(),
       courseCode: byId('c-code').value.trim(),
       teacherName:byId('c-teacher').value.trim(),
-      numWeeks: parseInt(byId('c-weeks').value, 10), // Yeni
+      numWeeks: parseInt(byId('c-weeks').value, 10), // Güncel
       requiredPct: parseInt(byId('c-req').value, 10),
       password: byId('c-pass').value
     };
@@ -595,24 +592,21 @@
       const r = await call(p).catch(e=>({success:false,error:String(e)}));
       if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false);
       
-      _APP_TOKEN = r.token; // TOKEN'I SAKLA
-      // GÜNCELLEME 2: totalWeeks eklendi
+      _APP_TOKEN = r.token;
       current = { 
         code: p.courseCode.trim().toUpperCase(), 
         name: r.courseName, 
         teacher: r.teacherName, 
         attendanceType: r.attendanceType, 
         requiredPct: r.requiredPct,
-        totalWeeks: r.totalWeeks // Backend'den gelen toplam hafta sayısı
+        totalWeeks: r.totalWeeks // Dinamik hafta
       };
       
       byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.totalWeeks} Hafta)`;
       const chip = byId('ruleChip'); chip.textContent = `Devam şartı %${current.requiredPct}`; chip.className = 'chip ok';
       
-      // GÜNCELLEME 2: Hafta dropdown'ını dinamik doldur
       fillWeekDropdown(current.totalWeeks);
-      
-      buildHeader(current.totalWeeks); // Başlığı dinamik doldur
+      buildHeader(current.totalWeeks);
       refreshTable(); 
       show('panel');
       byId('t-code').value = ''; byId('t-pass').value = '';
@@ -637,14 +631,16 @@
     manual = byId('manual-mode').checked;
     byId('manualHint').style.display = manual ? 'block' : 'none';
     byId('addStudentContainer').style.display = manual ? 'block' : 'none';
-    buildHeader(current.totalWeeks); // Başlığı (sil butonları için) yenile
+    buildHeader(current.totalWeeks);
     refreshTable();
   });
 
   $('#btnAddStudent').addEventListener('click', ()=>{
     const no = byId('new-s-no').value.trim();
     const nm = byId('new-s-name').value.trim();
-    if (!REGEX_STUDENT_NO.test(no)) return msg('msg-add-stu', 'Hata: Öğrenci No 12 haneli sayı olmalıdır.', false);
+    
+    // GÜNCELLEME 2 (11 Hane): Hata mesajı değişti
+    if (!REGEX_STUDENT_NO.test(no)) return msg('msg-add-stu', 'Hata: Öğrenci No 11 haneli sayı olmalıdır.', false);
     if (!REGEX_STUDENT_NAME.test(nm)) return msg('msg-add-stu', 'Hata: Ad Soyad sadece harf ve boşluk içerebilir.', false);
     byId('msg-add-stu').style.display = 'none';
     
@@ -675,19 +671,19 @@
     const nm = byId('s-name').value.trim();
 
     if (!c || !no || !nm) return msg('msg-stu','Tüm alanlar zorunludur.',false);
-    // GÜNCELLEME 2: Hafta kontrolü (totalWeeks henüz bilinmiyor, backend yapacak)
     if (byId('weekBox').style.display !== 'none' && !w) return msg('msg-stu','Hafta zorunludur.',false);
     
-    if (!REGEX_STUDENT_NO.test(no)) return msg('msg-stu', 'Hata: Öğrenci No 12 haneli sayı olmalıdır.', false);
+    // GÜNCELLEME 2 (11 Hane): Hata mesajı değişti
+    if (!REGEX_STUDENT_NO.test(no)) return msg('msg-stu', 'Hata: Öğrenci No 11 haneli sayı olmalıdır.', false);
     if (!REGEX_STUDENT_NAME.test(nm)) return msg('msg-stu', 'Hata: Ad Soyad sadece harf ve boşluk içerebilir.', false);
     
     withPending($('#btnStu'), async ()=> submitAttendance(c, w, no, nm));
   });
 
-  // === GÜNCELLEME 2: Dinamik Hafta Doldurucu ===
+  // === Dinamik Hafta Doldurucu ===
   function fillWeekDropdown(totalWeeks) {
       const w = byId('week');
-      w.innerHTML = '<option value="">(seç)</option>'; // Temizle
+      w.innerHTML = '<option value="">(seç)</option>';
       for(let i=1; i <= totalWeeks; i++){ 
           const o=document.createElement('option'); 
           o.value=String(i); 
@@ -705,14 +701,13 @@
     ['Öğrenci No','Ad Soyad'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     
     if (current && current.attendanceType==='weekly'){
-      for(let i=1; i <= totalWeeks; i++){ // Dinamik döngü
+      for(let i=1; i <= totalWeeks; i++){
         const th=document.createElement('th'); th.textContent='H'+i; tr.appendChild(th); 
       }
       ['Devam%','Durum'].forEach(h=>{const th=document.createElement('th'); th.textContent=h; tr.appendChild(th);});
     }
     g.appendChild(tr);
     
-    // Tablo min-genişliğini ayarla (350 sticky + (hafta * 60) + 120 durum)
     const minWidth = 350 + (totalWeeks * 60) + 120;
     g.style.minWidth = `${minWidth}px`;
   }
@@ -725,11 +720,12 @@
         action:'getCourseTable', 
         courseCode: current.code,
         token: _APP_TOKEN
-    }).catch(()=>({success:false, error:'Sunucu hatası'}));
+    }).catch((err)=>({success:false, error: 'Sunucu hatası: ' + err.message })); // Hata detayını göster
 
     if (!res.success){ 
       byId('listMsg').style.display='block'; 
-      byId('listMsg').textContent='Tablo alınamadı. Hata: ' + (res.error || 'Bilinmeyen'); 
+      // Gelen hatayı doğrudan göster
+      byId('listMsg').textContent= (res.error || 'Bilinmeyen tablo hatası'); 
       if (res.error && res.error.includes("Oturum süresi doldu")) {
         setTimeout(() => $('#btnLogout').click(), 2000);
       }
@@ -737,10 +733,9 @@
     }
     byId('listMsg').style.display='none';
 
-    // Başlığı yeniden oluştur (hafta sayısı değişmiş olabilir - gerçi login'de yapıyoruz)
     buildHeader(current.totalWeeks);
     const g = byId('grid');
-    while (g.rows.length>1) g.deleteRow(1); // Sadece veri satırlarını sil
+    while (g.rows.length>1) g.deleteRow(1);
     function td(t){ const el=document.createElement('td'); el.textContent=t||''; return el; }
 
     res.table.forEach(row=>{
@@ -783,10 +778,9 @@
         tr.appendChild(tdw);
       });
 
-      // Yüzde / Durum (GÜNCELLEME 1: Mantık backend'de düzeldi)
+      // Yüzde / Durum
       const p = row.percent, st = row.status;
       const pctTd = td(p+'%'); 
-      // Duruma göre renklendir
       if(st === 'FAIL') pctTd.className = 'cell-fail';
       else if (st === 'WARN') pctTd.className = 'cell-warn';
       else pctTd.className = 'cell-ok';
@@ -814,13 +808,11 @@
         token: _APP_TOKEN
     }).catch((err)=>{ console.error("setManualMark hatası:", err); });
     
-    // Anlık tepki
     cell.textContent = next;
     cell.className = 'td-manual ';
     if(next==='✓') cell.className += ' cell-ok';
     else if(next==='✗') cell.className += ' cell-fail';
     
-    // Yüzdeyi ve durumu sunucudan yeniden çek
     await refreshTable(); 
   }
 
