@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Yaşar Üniversitesi Yoklama</title>
 <style>
-  /* === CSS v3.9 ile aynı, ek olarak forgot/reset section stilleri === */
+  /* === CSS v3.10 ile aynı === */
   :root {
     --pri: #1e3c72; --pri-2: #304a80; --pri-light: #eef2f7;
     --bg: #f8f9fa; --ok: #166534; --ok-bg: #dcfce7;
@@ -62,9 +62,9 @@
   #qrControls button { font-size: 18px; font-weight: bold; width: 48px; height: 48px; padding: 0; line-height: 1; }
   #btnQrFullScreen { width: auto; font-size: 14px; padding: 0 16px; }
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 1000; }
-  .modal-content { background: #fff; padding: 24px; border-radius: 16px; text-align: center; position: relative; } /* Added relative positioning */
+  .modal-content { background: #fff; padding: 24px; border-radius: 16px; text-align: center; position: relative; }
   #qrModalCode { margin: 0 auto 20px auto; padding: 16px; background: #fff; border-radius: 12px; }
-  #btnModalClose { position: absolute; top: 10px; right: 10px; /* Adjusted position */ width: 40px; height: 40px; border-radius: 50%; padding: 0; background: var(--err); color: #fff; font-size: 20px; font-weight: bold; border: 2px solid #fff; cursor: pointer; }
+  #btnModalClose { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; padding: 0; background: var(--err); color: #fff; font-size: 20px; font-weight: bold; border: 2px solid #fff; cursor: pointer; }
   .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; margin-bottom: 12px; }
   .table-toolbar h4 { margin: 0; }
   #grid-container { overflow-x: auto; max-height: 65vh; border: 1px solid var(--br); border-radius: 12px; background: linear-gradient(to right, white 30%, rgba(255,255,255,0)), linear-gradient(to right, rgba(255,255,255,0), white 70%) 100% 0, radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.15), rgba(0,0,0,0)), radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.15), rgba(0,0,0,0)) 100% 0; background-repeat: no-repeat; background-color: white; background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%; background-attachment: local, local, scroll, scroll; }
@@ -80,7 +80,7 @@
   .chip { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 13px; } .chip.ok { background: #16a34a22; color: #166534; border: 1px solid #16a34a33; }
   .is-hidden { height: 0; overflow: hidden; padding-top: 0; padding-bottom: 0; opacity: 0; transition: all .25s ease; margin-top: 0; } .is-open { height: auto; opacity: 1; padding-top: 16px; padding-bottom: 16px; margin-top: 16px; }
   .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, .4); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; } .is-pending .spinner { display: inline-block; } @keyframes spin { to { transform: rotate(360deg); } }
-  .link { color: var(--pri); text-decoration: underline; cursor: pointer; font-size: 13px; margin-top: 8px; display: inline-block; } /* Şifremi unuttum link stili */
+  .link { color: var(--pri); text-decoration: underline; cursor: pointer; font-size: 13px; margin-top: 8px; display: inline-block; }
   @media (max-width: 768px) { .add-student-form { grid-template-columns: 1fr; } }
   @media (max-width: 640px) { body { padding: 0; } .card { border-radius: 0; min-height: 100vh; } header { padding: 16px; border-radius: 0; } header h2 { font-size: 1.15rem; } main { padding: 16px; } .col { min-width: 100%; } input, select, button { font-size: 16px; padding: 14px; } button { min-height: 48px; } #qrWrap { padding: 16px; } .panel-header { flex-direction: column; align-items: flex-start; } .modal-content { width: 95vw; padding: 16px; } #btnModalClose { top: 10px; right: 10px; } .table-toolbar { flex-direction: column; align-items: flex-start; gap: 10px;} }
 </style>
@@ -99,21 +99,15 @@
           <button id="btnLogin"><span class="lbl">Giriş Yap</span><span class="spinner" aria-hidden="true"></span></button>
           <div id="msg-login" class="msg" style="display:none"></div>
           <a id="forgotPasswordLink" class="link">Şifremi Unuttum?</a>
-          </div>
+        </div>
         <div class="col">
           <div class="flex" style="justify-content:space-between">
             <h3 style="margin:0">Ders Oluştur</h3>
             <button id="btnToggleCreate" class="btn-ghost" type="button" aria-expanded="false" aria-controls="createPanel">Paneli Aç</button>
           </div>
           <section id="createPanel" class="is-hidden" hidden>
-            <input id="c-name" placeholder="Ders adı (BIL101)">
-            <input id="c-code" placeholder="Ders kodu (BIL101)">
-            <input id="c-teacher" placeholder="Öğretim üyesi Ad Soyad">
-            <input id="c-email" type="email" placeholder="Öğretim Üyesi E-posta Adresi" required>
-            <div class="row">
-              <div class="col"><select id="c-weeks"><option value="7">7</option><option value="10">10</option><option value="12">12</option><option value="14" selected>14</option><option value="16">16</option><option value="17">17</option></select></div>
-              <div class="col"><select id="c-req"><option value="70">%70</option><option value="75">%75</option><option value="80">%80</option><option value="85">%85</option><option value="90">%90</option></select></div>
-            </div>
+            <input id="c-name" placeholder="Ders adı (BIL101)"> <input id="c-code" placeholder="Ders kodu (BIL101)"> <input id="c-teacher" placeholder="Öğretim üyesi Ad Soyad"> <input id="c-email" type="email" placeholder="Öğretim Üyesi E-posta Adresi" required>
+            <div class="row"> <div class="col"> <select id="c-weeks"> <option value="7">7</option><option value="10">10</option><option value="12">12</option><option value="14" selected>14</option><option value="16">16</option><option value="17">17</option> </select> </div> <div class="col"> <select id="c-req"> <option value="70">%70</option><option value="75">%75</option><option value="80">%80</option><option value="85">%85</option><option value="90">%90</option> </select> </div> </div>
             <input id="c-pass" placeholder="Ders şifresi (hoca)" type="password">
             <div class="flex" style="gap:8px"><button id="btnCreate"><span class="lbl">Oluştur</span><span class="spinner" aria-hidden="true"></span></button><button id="btnCloseCreate" class="btn-ghost" type="button">Kapat</button></div>
             <div id="msg-create" class="msg" style="display:none"></div>
@@ -123,151 +117,66 @@
     </div>
 
     <div id="forgotPasswordSection" class="section">
-        <h3>Şifre Sıfırlama İsteği</h3>
-        <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">Derse kayıt olurken kullandığınız e-posta adresinizi girin. Size şifre sıfırlama linki göndereceğiz.</p>
-        <input id="f-email" type="email" placeholder="Kayıtlı E-posta Adresiniz" required>
-        <button id="btnForgotPasswordRequest"><span class="lbl">Sıfırlama Linki Gönder</span><span class="spinner" aria-hidden="true"></span></button>
-        <div id="msg-forgot" class="msg" style="display:none"></div>
-        <a id="backToLoginLink" class="link">← Giriş Ekranına Dön</a>
+        <h3>Şifre Sıfırlama İsteği</h3> <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">Derse kayıt olurken kullandığınız e-posta adresinizi girin.</p> <input id="f-email" type="email" placeholder="Kayıtlı E-posta Adresiniz" required> <button id="btnForgotPasswordRequest"><span class="lbl">Sıfırlama Linki Gönder</span><span class="spinner" aria-hidden="true"></span></button> <div id="msg-forgot" class="msg" style="display:none"></div> <a id="backToLoginLink" class="link">← Giriş Ekranına Dön</a>
     </div>
     <div id="resetPasswordSection" class="section">
-        <h3>Yeni Şifre Belirle</h3>
-        <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">Yeni şifrenizi girin (en az 4 karakter).</p>
-        <input type="hidden" id="reset-code"> <input type="hidden" id="reset-email">
-        <input id="r-pass1" type="password" placeholder="Yeni Şifre" required minlength="4">
-        <input id="r-pass2" type="password" placeholder="Yeni Şifre Tekrar" required minlength="4">
-        <button id="btnResetPassword"><span class="lbl">Şifreyi Güncelle</span><span class="spinner" aria-hidden="true"></span></button>
-        <div id="msg-reset" class="msg" style="display:none"></div>
+        <h3>Yeni Şifre Belirle</h3> <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">Yeni şifrenizi girin (en az 4 karakter).</p> <input type="hidden" id="reset-code"> <input type="hidden" id="reset-email"> <input id="r-pass1" type="password" placeholder="Yeni Şifre" required minlength="4"> <input id="r-pass2" type="password" placeholder="Yeni Şifre Tekrar" required minlength="4"> <button id="btnResetPassword"><span class="lbl">Şifreyi Güncelle</span><span class="spinner" aria-hidden="true"></span></button> <div id="msg-reset" class="msg" style="display:none"></div>
     </div>
-    <div id="panel" class="section"> /* ... (içerik aynı) ... */ </div>
-    <div id="student" class="section"> /* ... (içerik aynı) ... */ </div>
+
+    <div id="panel" class="section"> <div class="panel-header"><div class="panel-header-left"><button class="secondary" id="btnLogout">← Çıkış</button><h3 id="courseTitle"></h3></div><span id="ruleChip" class="chip"></span></div><div class="controls-grid"><div class="form-group"><label for="week">Hafta Seç</label><select id="week"><option value="">(seç)</option></select></div><div class="form-group"><label class="form-label">Ayarlar</label><div class="checkbox-group"><label><input id="geo-required" type="checkbox" checked /><span>Konum Zorunlu</span></label><label><input id="manual-mode" type="checkbox" /><span>Manuel Mod</span></label></div></div><div class="form-group"><label class="form-label" style="visibility:hidden;">Başlat</label><button id="btnStart"><span class="lbl">QR Başlat</span><span class="spinner" aria-hidden="true"></span></button></div></div><div id="addStudentContainer"><h5 style="margin-bottom: 12px;">Manuel Öğrenci Ekle</h5><div class="add-student-form"><input id="new-s-no" type="tel" inputmode="numeric" placeholder="Öğrenci No (11 Hane)" maxlength="11"><input id="new-s-name" type="text" placeholder="Ad Soyad (Sadece Harf)"><button id="btnAddStudent"><span class="lbl">Ekle</span><span class="spinner" aria-hidden="true"></span></button></div><div id="msg-add-stu" class="msg" style="display:none"></div></div><div id="qrWrap" style="display:none"><h5>QR Kod (5 Dakika Geçerli)</h5><div id="qrDisplay"></div><div id="timer" class="msg info"></div><div id="qrControls"><button id="btnQrZoomOut" title="Küçült" class="secondary">-</button><button id="btnQrZoomIn" title="Büyüt" class="secondary">+</button><button id="btnQrFullScreen">Tam Ekran 🖥️</button></div><button class="secondary" id="btnStop" style="margin-top: 20px;"><span class="lbl">Yoklamayı Durdur</span><span class="spinner" aria-hidden="true"></span></button></div><div id="manualHint" class="msg info" style="display:none; margin-top:16px;">Manuel mod açık: Hücreye tıkla (✓/✗) veya yeni öğrenci ekle.</div><div class="table-toolbar"><h4>Öğrenci Listesi (Canlı)</h4><button id="btnExcelExport" class="btn-ghost" style="min-width: 150px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg> Excel İndir </button></div><div id="listMsg" class="msg" style="display:none"></div><div id="grid-container"><table id="grid"></table></div> </div>
+    <div id="student" class="section"> <h3>Öğrenci Yoklama</h3><input id="s-course" placeholder="Ders kodu"><div id="weekBox"><input id="s-week" type="number" min="1" max="17" placeholder="Hafta (1-17)"></div><input id="s-no" type="tel" inputmode="numeric" placeholder="Öğrenci No (11 Hane)" maxlength="11" pattern="[0-9]{11}" title="Lütfen 11 haneli öğrenci numaranızı girin." required><input id="s-name" type="text" placeholder="Ad Soyad (Sadece Harf)" pattern="[a-zA-ZçÇğĞıİöÖşŞüÜ\s]+" title="Lütfen sadece harf ve boşluk girin." required><button id="btnStu"><span class="lbl">Kaydet</span><span class="spinner" aria-hidden="true"></span></button><div id="msg-stu" class="msg" style="display:none"></div> </div>
   </main>
 </div>
-<div id="qrModal" class="modal-overlay"> /* ... (içerik aynı) ... */ </div>
+<div id="qrModal" class="modal-overlay"> <div class="modal-content"><div id="qrModalCode"></div><div id="qrControls" style="margin-top: 10px;"><button id="btnModalQrZoomOut" title="Küçült" class="secondary">-</button><button id="btnModalQrZoomIn" title="Büyüt" class="secondary">+</button></div><button id="btnModalClose" title="Kapat">X</button></div></div>
 
 <script>
-  // === CONFIG & STATE (Aynı) ===
-  let GAS_URL = "https://script.google.com/macros/s/AKfycbzfrXYFYVdGtb-hgh4EExG0jCRg_rHFEcU-8I3sh86VjVUzR4WBATRx9tMvI4zL95sAcA/exec"; const REGEX_STUDENT_NO = /^[0-9]{11}$/; const REGEX_STUDENT_NAME = /^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]+$/;
+  // === CONFIG ===
+  let GAS_URL = "https://script.google.com/macros/s/AKfycbzfrXYFYVdGtb-hgh4EExG0jCRg_rHFEcU-8I3sh86VjVUzR4WBATRx9tMvI4zL95sAcA/exec"; // Yeni dağıtım URL'si şart
+  const REGEX_STUDENT_NO = /^[0-9]{11}$/; const REGEX_STUDENT_NAME = /^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]+$/;
+
+  // === STATE ===
   let current = null; let poll = null, tick = null; let closedOnce=false, manual=false; let _APP_TOKEN = null; let _CURRENT_QR_DATA = ""; let _CURRENT_QR_SIZE = 280; let _MODAL_QR_SIZE = 400;
   const $ = sel => document.querySelector(sel); const byId = id => document.getElementById(id);
 
-  // === INIT ===
-  (function(){
-    const p = new URLSearchParams(location.search);
-    const devUrl = p.get('gas_url'); if (devUrl) GAS_URL = devUrl;
+  // === INIT (Reset link kontrolü eklendi) ===
+  (function(){ const p = new URLSearchParams(location.search); const devUrl = p.get('gas_url'); if (devUrl) GAS_URL = devUrl; const resetCode = p.get('resetCode'); const resetEmail = p.get('email'); if (resetCode && resetEmail) { show('resetPasswordSection'); byId('reset-code').value = resetCode; byId('reset-email').value = resetEmail; window.history.replaceState({}, document.title, window.location.pathname); } else { const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo'); if (c) { show('student'); byId('s-course').value = c; } if (t === 'hourly') { byId('weekBox').style.display='none'; byId('s-week').value=''; } else if (w) { byId('s-week').value = w; } window._geoRequired = (geo !== '0'); } })();
 
-    // ****** YENİ: Reset link kontrolü ******
-    const resetCode = p.get('resetCode');
-    const resetEmail = p.get('email');
-    if (resetCode && resetEmail) {
-        show('resetPasswordSection'); // Reset bölümünü göster
-        byId('reset-code').value = resetCode;
-        byId('reset-email').value = resetEmail;
-        // URL'den parametreleri temizle (isteğe bağlı ama daha temiz)
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-        // Normal başlangıç (öğrenci linki vs.)
-        const c = p.get('c'), t = p.get('t'), w = p.get('w'), geo = p.get('geo');
-        if (c) { show('student'); byId('s-course').value = c; }
-        if (t === 'hourly') { byId('weekBox').style.display='none'; byId('s-week').value=''; }
-        else if (w) { byId('s-week').value = w; }
-        window._geoRequired = (geo !== '0');
-    }
-  })();
-
-  // === VIEW SWITCH & MSG (Aynı) ===
-  function show(id){ ['menu','panel','student','forgotPasswordSection','resetPasswordSection'].forEach(s=>byId(s)?.classList.remove('active')); byId(id)?.classList.add('active'); } // Yeni section'lar eklendi
+  // === VIEW SWITCH & MSG (Yeni section'lar eklendi) ===
+  function show(id){ ['menu','panel','student','forgotPasswordSection','resetPasswordSection'].forEach(s=>byId(s)?.classList.remove('active')); const target = byId(id); if(target) target.classList.add('active'); else console.error("Section not found:", id); }
   function msg(id, text, ok){ const el = byId(id); if(!el) return; el.textContent = text; el.className = 'msg ' + (ok === null ? 'info' : (ok ? 'ok' : 'error')); el.style.display = 'block'; }
-  async function call(obj){ const res = await fetch(GAS_URL,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(obj) }); return res.json(); }
+  async function call(obj){ try { const res = await fetch(GAS_URL,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(obj) }); if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`); const data = await res.json(); return data; } catch (error) { console.error("API call failed:", error); msg('listMsg', `API isteği başarısız: ${error.message}. GAS_URL'i kontrol edin veya script'i yeniden dağıtın.`, false); /* Hata mesajını göster */ return { success: false, error: error.message }; } }
   function withPending(btn, fn){ const lbl = btn.querySelector('.lbl'); const orig = lbl ? lbl.textContent : ''; btn.disabled = true; btn.classList.add('is-pending'); return fn().finally(()=>{ btn.disabled = false; btn.classList.remove('is-pending'); if (lbl) lbl.textContent = orig; }); }
-  const createPanel = byId('createPanel'); const toggleBtn = byId('btnToggleCreate'); const closeBtn = byId('btnCloseCreate'); function openCreatePanel(){ /*...*/ } function closeCreatePanel(){ /*...*/ } toggleBtn.addEventListener('click', ()=> (createPanel.hidden||createPanel.classList.contains('is-hidden')) ? openCreatePanel() : closeCreatePanel()); closeBtn.addEventListener('click', closeCreatePanel);
+  const createPanel = byId('createPanel'); const toggleBtn = byId('btnToggleCreate'); const closeBtn = byId('btnCloseCreate'); function openCreatePanel(){ if (!createPanel.classList.contains('is-hidden')) return; createPanel.hidden = false; createPanel.style.height = '0px'; requestAnimationFrame(()=>{ createPanel.classList.add('is-open'); createPanel.classList.remove('is-hidden'); const h = createPanel.scrollHeight + 'px'; createPanel.style.height = h; setTimeout(()=>{ createPanel.style.height='auto'; },260); }); toggleBtn.setAttribute('aria-expanded','true'); setTimeout(()=> byId('c-code')?.focus(), 50); toggleBtn.textContent = 'Paneli Kapat'; } function closeCreatePanel(){ if (createPanel.classList.contains('is-hidden')) return; const h = createPanel.scrollHeight + 'px'; createPanel.style.height = h; requestAnimationFrame(()=>{ createPanel.classList.remove('is-open'); createPanel.classList.add('is-hidden'); createPanel.style.height = '0px'; }); toggleBtn.setAttribute('aria-expanded','false'); setTimeout(()=>{ createPanel.hidden = true; createPanel.style.height=''; },260); toggleBtn.textContent = 'Paneli Aç'; }
+  // DÜZELTME: toggleBtn null değilse event listener ekle
+  if(toggleBtn) toggleBtn.addEventListener('click', ()=> (createPanel.hidden||createPanel.classList.contains('is-hidden')) ? openCreatePanel() : closeCreatePanel());
+  if(closeBtn) closeBtn.addEventListener('click', closeCreatePanel);
 
   // === BUTTON HANDLERS ===
-  $('#btnCreate').addEventListener('click', ()=>{ // Email eklendi
-    const payload = { action:'createCourse', courseName: byId('c-name').value.trim(), courseCode: byId('c-code').value.trim(), teacherName:byId('c-teacher').value.trim(), email: byId('c-email').value.trim(), numWeeks: parseInt(byId('c-weeks').value, 10), requiredPct: parseInt(byId('c-req').value, 10), password: byId('c-pass').value };
-    if (!payload.email || !/@/.test(payload.email)) return msg('msg-create', 'Lütfen geçerli bir e-posta adresi girin.', false);
-    if (payload.courseCode.length < 3 || payload.courseName.length < 2 || payload.teacherName.length < 2 || payload.password.length < 4) return msg('msg-create', 'Tüm alanlar doldurulmalı (şifre min 4 hane).', false);
-    withPending($('#btnCreate'), async ()=>{ const r = await call(payload).catch(e=>({success:false,error:String(e)})); if (r.success){ msg('msg-create','Ders oluşturuldu',true); ['c-name','c-code','c-teacher','c-email','c-pass'].forEach(id=>byId(id).value=''); }else{ msg('msg-create','Hata: '+(r.error||'bilinmeyen'),false); } });
-  });
+  // DÜZELTME: Butonlar null değilse event listener ekle
+  const btnCreate = byId('btnCreate'); if(btnCreate) btnCreate.addEventListener('click', ()=>{ const payload = { action:'createCourse', courseName: byId('c-name').value.trim(), courseCode: byId('c-code').value.trim(), teacherName:byId('c-teacher').value.trim(), email: byId('c-email').value.trim(), numWeeks: parseInt(byId('c-weeks').value, 10), requiredPct: parseInt(byId('c-req').value, 10), password: byId('c-pass').value }; if (!payload.email || !/@/.test(payload.email)) return msg('msg-create', 'Geçerli e-posta girin.', false); if (payload.courseCode.length < 3 || payload.courseName.length < 2 || payload.teacherName.length < 2 || payload.password.length < 4) return msg('msg-create', 'Tüm alanlar dolu olmalı (şifre min 4).', false); withPending(btnCreate, async ()=>{ const r = await call(payload); if (r.success){ msg('msg-create','Ders oluşturuldu',true); ['c-name','c-code','c-teacher','c-email','c-pass'].forEach(id=>byId(id).value=''); }else{ msg('msg-create','Hata: '+(r.error||'bilinmeyen'),false); } }); });
+  const btnLogin = byId('btnLogin'); if(btnLogin) btnLogin.addEventListener('click', ()=>{ const p = { action:'teacherLogin', courseCode: byId('t-code').value.trim(), password: byId('t-pass').value }; if (!p.courseCode || !p.password){ msg('msg-login','Ders kodu/şifre boş olamaz',false); return; } byId('msg-login').style.display = 'none'; withPending(btnLogin, async ()=>{ const r = await call(p); if (!r.success) return msg('msg-login','Hata: '+(r.error||'giriş başarısız'),false); _APP_TOKEN = r.token; current = { code: p.courseCode.trim().toUpperCase(), name: r.courseName, teacher: r.teacherName, attendanceType: r.attendanceType, requiredPct: r.requiredPct, totalWeeks: r.totalWeeks }; byId('courseTitle').textContent = `${current.code} — ${current.name} (${current.totalWeeks} Hafta)`; const chip = byId('ruleChip'); chip.textContent = `Devam %${current.requiredPct}`; chip.className = 'chip ok'; fillWeekDropdown(current.totalWeeks); buildHeader(current.totalWeeks); refreshTable(); show('panel'); byId('t-code').value = ''; byId('t-pass').value = ''; }); });
+  const btnLogout = byId('btnLogout'); if(btnLogout) btnLogout.addEventListener('click', ()=>{ current=null; _APP_TOKEN = null; clearInterval(poll); clearInterval(tick); show('menu'); byId('msg-login').style.display = 'none'; });
+  const btnStart = byId('btnStart'); if(btnStart) btnStart.addEventListener('click', ()=>{ withPending(btnStart, async ()=> startAttendance()); });
+  const btnStop = byId('btnStop'); if(btnStop) btnStop.addEventListener('click', ()=>{ withPending(btnStop, async ()=> endAttendance()); });
+  const manualModeCheckbox = byId('manual-mode'); if(manualModeCheckbox) manualModeCheckbox.addEventListener('change', ()=>{ manual = manualModeCheckbox.checked; byId('manualHint').style.display = manual ? 'block' : 'none'; byId('addStudentContainer').style.display = manual ? 'block' : 'none'; buildHeader(current.totalWeeks); refreshTable(); });
+  const btnAddStudent = byId('btnAddStudent'); if(btnAddStudent) btnAddStudent.addEventListener('click', ()=>{ const no = byId('new-s-no').value.trim(); const nm = byId('new-s-name').value.trim(); if (!REGEX_STUDENT_NO.test(no)) return msg('msg-add-stu', 'Hata: Öğrenci No 11 haneli sayı olmalıdır.', false); if (!REGEX_STUDENT_NAME.test(nm)) return msg('msg-add-stu', 'Hata: Ad Soyad sadece harf ve boşluk içerebilir.', false); byId('msg-add-stu').style.display = 'none'; const payload = { action: 'addNewStudent', courseCode: current.code, token: _APP_TOKEN, studentNumber: no, studentName: nm }; withPending(btnAddStudent, async ()=>{ const r = await call(payload); if (r.success){ msg('msg-add-stu', 'Öğrenci eklendi.', true); byId('new-s-no').value = ''; byId('new-s-name').value = ''; await refreshTable(); }else{ msg('msg-add-stu', 'Hata: ' + (r.error || 'bilinmeyen'), false); } }); });
+  const btnStu = byId('btnStu'); if(btnStu) btnStu.addEventListener('click', ()=>{ const c = byId('s-course').value.trim(); const w = byId('s-week').value.trim(); const no = byId('s-no').value.trim(); const nm = byId('s-name').value.trim(); if (!c || !no || !nm) return msg('msg-stu','Tüm alanlar zorunludur.',false); if (byId('weekBox').style.display !== 'none' && !w) return msg('msg-stu','Hafta zorunludur.',false); if (!REGEX_STUDENT_NO.test(no)) return msg('msg-stu', 'Hata: Öğrenci No 11 haneli sayı olmalıdır.', false); if (!REGEX_STUDENT_NAME.test(nm)) return msg('msg-stu', 'Hata: Ad Soyad sadece harf ve boşluk içerebilir.', false); withPending(btnStu, async ()=> submitAttendance(c, w, no, nm)); });
 
-  $('#btnLogin').addEventListener('click', ()=>{ /* Aynı */ });
-  $('#btnLogout').addEventListener('click', ()=>{ /* Aynı */ });
-  $('#btnStart').addEventListener('click', ()=>{ /* Aynı */ });
-  $('#btnStop').addEventListener('click', ()=>{ /* Aynı */ });
-  $('#manual-mode').addEventListener('change', ()=>{ /* Aynı */ });
-  $('#btnAddStudent').addEventListener('click', ()=>{ /* Aynı */ });
-  $('#btnStu').addEventListener('click', ()=>{ /* Aynı */ });
+  // Yeni Şifre Sıfırlama Butonları
+  const forgotLink = byId('forgotPasswordLink'); if(forgotLink) forgotLink.addEventListener('click', () => { show('forgotPasswordSection'); });
+  const backLink = byId('backToLoginLink'); if(backLink) backLink.addEventListener('click', () => { show('menu'); byId('msg-forgot').style.display = 'none'; });
+  const btnForgotReq = byId('btnForgotPasswordRequest'); if(btnForgotReq) btnForgotReq.addEventListener('click', () => { const email = byId('f-email').value.trim(); if (!email || !email.includes('@')) return msg('msg-forgot', 'Geçerli e-posta girin.', false); const payload = { action: 'forgotPasswordRequest', email: email }; withPending(btnForgotReq, async () => { const r = await call(payload); if (r.success) msg('msg-forgot', 'E-postanıza sıfırlama linki gönderildi (spam klasörüne bakın).', true); else msg('msg-forgot', 'Hata: ' + (r.error || 'İstek gönderilemedi.'), false); }); });
+  const btnResetPass = byId('btnResetPassword'); if(btnResetPass) btnResetPass.addEventListener('click', () => { const code = byId('reset-code').value; const email = byId('reset-email').value; const pass1 = byId('r-pass1').value; const pass2 = byId('r-pass2').value; if (!pass1 || pass1.length < 4) return msg('msg-reset', 'Yeni şifre min 4 karakter.', false); if (pass1 !== pass2) return msg('msg-reset', 'Şifreler eşleşmiyor.', false); if (!code || !email) return msg('msg-reset', 'Geçersiz sıfırlama bilgisi.', false); const payload = { action: 'resetPassword', resetCode: code, email: email, newPassword: pass1 }; withPending(btnResetPass, async () => { const r = await call(payload); if (r.success) { msg('msg-reset', 'Şifreniz güncellendi! Girişe yönlendiriliyorsunuz...', true); setTimeout(() => { show('menu'); msg('msg-login', "Şifreniz güncellendi, giriş yapabilirsiniz.", true); byId('msg-reset').style.display = 'none'; }, 3000); } else { msg('msg-reset', 'Hata: ' + (r.error || 'Şifre güncellenemedi.'), false); } }); });
 
-  // ****** YENİ BUTONLAR/LİNKLER ******
-  $('#forgotPasswordLink').addEventListener('click', () => {
-      show('forgotPasswordSection');
-  });
-  $('#backToLoginLink').addEventListener('click', () => {
-      show('menu'); // Giriş ekranını göster
-      byId('msg-forgot').style.display = 'none'; // Mesajı temizle
-  });
-
-  $('#btnForgotPasswordRequest').addEventListener('click', () => {
-      const email = byId('f-email').value.trim();
-      if (!email || !email.includes('@')) {
-          return msg('msg-forgot', 'Lütfen geçerli bir e-posta adresi girin.', false);
-      }
-      const payload = { action: 'forgotPasswordRequest', email: email };
-      withPending($('#btnForgotPasswordRequest'), async () => {
-          const r = await call(payload).catch(e=>({success:false, error: String(e)}));
-          if (r.success) {
-              msg('msg-forgot', 'E-posta adresinize şifre sıfırlama linki gönderildi. Lütfen kontrol edin (spam klasörüne de bakın).', true);
-          } else {
-              msg('msg-forgot', 'Hata: ' + (r.error || 'İstek gönderilemedi.'), false);
-          }
-      });
-  });
-
-  $('#btnResetPassword').addEventListener('click', () => {
-      const code = byId('reset-code').value;
-      const email = byId('reset-email').value;
-      const pass1 = byId('r-pass1').value;
-      const pass2 = byId('r-pass2').value;
-
-      if (!pass1 || pass1.length < 4) return msg('msg-reset', 'Yeni şifre en az 4 karakter olmalı.', false);
-      if (pass1 !== pass2) return msg('msg-reset', 'Şifreler eşleşmiyor.', false);
-      if (!code || !email) return msg('msg-reset', 'Geçersiz sıfırlama bilgisi.', false); // Güvenlik
-
-      const payload = { action: 'resetPassword', resetCode: code, email: email, newPassword: pass1 };
-      withPending($('#btnResetPassword'), async () => {
-          const r = await call(payload).catch(e=>({success:false, error: String(e)}));
-          if (r.success) {
-              msg('msg-reset', 'Şifreniz başarıyla güncellendi! Giriş ekranına yönlendiriliyorsunuz...', true);
-              setTimeout(() => {
-                  show('menu'); // Giriş ekranına dön
-                  byId('msg-login').textContent = "Şifreniz güncellendi, giriş yapabilirsiniz."; // Bilgi ver
-                  byId('msg-login').className = "msg ok";
-                  byId('msg-login').style.display = 'block';
-                  byId('msg-reset').style.display = 'none'; // Reset mesajını temizle
-              }, 3000);
-          } else {
-              msg('msg-reset', 'Hata: ' + (r.error || 'Şifre güncellenemedi.'), false);
-          }
-      });
-  });
-  // ****** YENİ BUTONLAR/LİNKLER SONU ******
-
-  // Diğer fonksiyonlar (fillWeekDropdown, buildHeader, refreshTable, cycleCell, QR, Excel, submitAttendance) aynı kaldı
-  function fillWeekDropdown(totalWeeks) { /*...*/ }
-  function buildHeader(totalWeeks){ /*...*/ }
-  async function refreshTable(){ /*...*/ }
-  async function cycleCell(cell){ /*...*/ }
-  function generateQrCode(targetElId, size) { /*...*/ }
-  function startAttendance(){ /*...*/ }
-  async function endAttendance(){ /*...*/ }
-  async function closeAndStop(){ /*...*/ }
-  $('#btnQrFullScreen').addEventListener('click', () => { /*...*/ });
-  $('#btnModalClose').addEventListener('click', () => { /*...*/ });
-  $('#btnQrZoomIn').addEventListener('click', () => { /*...*/ });
-  $('#btnQrZoomOut').addEventListener('click', () => { /*...*/ });
-  $('#btnModalQrZoomIn').addEventListener('click', () => { /*...*/ });
-  $('#btnModalQrZoomOut').addEventListener('click', () => { /*...*/ });
-  $('#btnExcelExport').addEventListener('click', () => { /*...*/ });
+  // === Diğer Fonksiyonlar (Aynı) ===
+  function fillWeekDropdown(totalWeeks) { /*...*/ } function buildHeader(totalWeeks){ /*...*/ } async function refreshTable(){ /*...*/ } async function cycleCell(cell){ /*...*/ } function generateQrCode(targetElId, size) { /*...*/ } function startAttendance(){ /*...*/ } async function endAttendance(){ /*...*/ } async function closeAndStop(){ /*...*/ }
+  const btnQrFullScreen = byId('btnQrFullScreen'); if(btnQrFullScreen) btnQrFullScreen.addEventListener('click', () => { generateQrCode('qrModalCode', _MODAL_QR_SIZE); byId('qrModal').style.display = 'flex'; });
+  const btnModalClose = byId('btnModalClose'); if(btnModalClose) btnModalClose.addEventListener('click', () => { byId('qrModal').style.display = 'none'; byId('qrModalCode').innerHTML = ''; });
+  const btnQrZoomIn = byId('btnQrZoomIn'); if(btnQrZoomIn) btnQrZoomIn.addEventListener('click', () => { _CURRENT_QR_SIZE += 40; generateQrCode('qrDisplay', _CURRENT_QR_SIZE); });
+  const btnQrZoomOut = byId('btnQrZoomOut'); if(btnQrZoomOut) btnQrZoomOut.addEventListener('click', () => { _CURRENT_QR_SIZE = Math.max(120, _CURRENT_QR_SIZE - 40); generateQrCode('qrDisplay', _CURRENT_QR_SIZE); });
+  const btnModalQrZoomIn = byId('btnModalQrZoomIn'); if(btnModalQrZoomIn) btnModalQrZoomIn.addEventListener('click', () => { _MODAL_QR_SIZE += 50; generateQrCode('qrModalCode', _MODAL_QR_SIZE); });
+  const btnModalQrZoomOut = byId('btnModalQrZoomOut'); if(btnModalQrZoomOut) btnModalQrZoomOut.addEventListener('click', () => { _MODAL_QR_SIZE = Math.max(150, _MODAL_QR_SIZE - 50); generateQrCode('qrModalCode', _MODAL_QR_SIZE); });
+  const btnExcelExport = byId('btnExcelExport'); if(btnExcelExport) btnExcelExport.addEventListener('click', () => { if (!current || !_APP_TOKEN) return alert('Lütfen önce giriş yapın.'); const downloadUrl = `${GAS_URL}?action=exportToExcel&code=${current.code}&token=${_APP_TOKEN}`; window.open(downloadUrl, '_blank'); });
   async function submitAttendance(c, w, no, nm){ /*...*/ }
 
 </script>
